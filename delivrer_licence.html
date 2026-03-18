@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>مصلحة الرخص - إصدار الرخصة</title>
+    <style>
+        body { font-family: Arial; padding: 40px; background-color: #f4f7f6; }
+        /* لون ذهبي/برتقالي لتمييز مرحلة الترخيص النهائية */
+        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 500px; margin: auto; border-top: 5px solid #f39c12; }
+        input, select, textarea, button { width: 100%; padding: 10px; margin-top: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { background-color: #f39c12; color: white; font-weight: bold; cursor: pointer; border: none; font-size: 16px; }
+        button:hover { background-color: #e67e22; }
+        #resultat { padding: 15px; border-radius: 5px; margin-top: 20px; display: none; }
+        .info-text { font-size: 13px; color: #7f8c8d; margin-top: -15px; margin-bottom: 15px; display: block; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2 style="text-align: center; color: #f39c12;">مصلحة الرخص - تسليم وأرشفة</h2>
+        
+        <form id="licenceForm">
+            <label><b>رقم التتبع (Code Suivi):</b></label>
+            <input type="text" id="code_suivi" required placeholder="مثال: TRK-123456789">
+
+            <label><b>الرخصة النهائية الموقعة (PDF):</b></label>
+            <span class="info-text">قم بعمل مسح ضوئي (Scan) للرخصة بعد توقيعها وارفعها هنا للحفظ بالأرشيف.</span>
+            <input type="file" id="document_autorisation" accept="application/pdf" required>
+
+            <button type="submit">إصدار الرخصة وإغلاق الملف 📜✔️</button>
+        </form>
+
+        <div id="resultat"></div>
+    </div>
+
+    <script>
+        document.getElementById('licenceForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // استخدام FormData لأننا نرسل ملفاً (File) وليس مجرد نص
+            const formData = new FormData();
+            formData.append('code_suivi', document.getElementById('code_suivi').value);
+            
+            const fileInput = document.getElementById('document_autorisation');
+            if(fileInput.files.length > 0) {
+                formData.append('document_autorisation', fileInput.files[0]);
+            }
+
+            try {
+                // إرسال البيانات (المتصفح سيقوم تلقائياً بتحديد الـ Headers المناسبة للملفات)
+                const response = await fetch('http://localhost:3000/api/licence/delivrer', {
+                    method: 'PUT',
+                    body: formData
+                });
+
+                const data = await response.json();
+                const divResultat = document.getElementById('resultat');
+                divResultat.style.display = 'block';
+
+                if (response.ok) {
+                    divResultat.style.backgroundColor = '#d4edda';
+                    divResultat.style.color = '#155724';
+                    divResultat.innerHTML = `<b>نجاح:</b> ${data.message} <br> <b>الحالة النهائية:</b> ${data.statut_actuel} <br> <small>مسار الرخصة: ${data.رابط_الرخصة}</small>`;
+                } else {
+                    divResultat.style.backgroundColor = '#f8d7da';
+                    divResultat.style.color = '#721c24';
+                    divResultat.innerHTML = `<b>خطأ:</b> ${data.message}`;
+                }
+            } catch (error) {
+                alert('حدث خطأ في الاتصال بالخادم!');
+            }
+        });
+    </script>
+</body>
+</html>

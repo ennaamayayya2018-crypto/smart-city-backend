@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - منصة تدبير الملك العمومي</title>
+    <style>
+        /* 🌟 المتغيرات والأساسيات */
+        :root { --primary: #1e3a8a; --secondary: #3b82f6; --dark: #0f172a; --bg: #f8fafc; --text: #334155; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, rgba(30, 58, 138, 0.9), rgba(15, 23, 42, 0.9)), url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop') center/cover no-repeat; }
+        
+        /* 🌟 صندوق تسجيل الدخول (Glassmorphism) */
+        .login-container { background: rgba(255, 255, 255, 0.95); padding: 50px 40px; border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.3); width: 100%; max-width: 400px; text-align: center; backdrop-filter: blur(10px); animation: slideUp 0.5s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 🌟 الشعار والعناوين */
+        .logo-icon { font-size: 50px; margin-bottom: 10px; display: inline-block; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .login-container h2 { margin: 0 0 10px 0; color: var(--dark); font-size: 24px; font-weight: 800; }
+        .login-container p { color: #64748b; margin-bottom: 30px; font-size: 14px; }
+
+        /* 🌟 الحقول والنماذج */
+        .form-group { margin-bottom: 20px; text-align: right; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 8px; color: var(--text); font-size: 14px; }
+        .form-control { width: 100%; padding: 15px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 15px; transition: 0.3s; box-sizing: border-box; background: #f8fafc; font-family: inherit; }
+        .form-control:focus { outline: none; border-color: var(--secondary); background: white; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+
+        /* 🌟 زر الدخول */
+        .btn-login { width: 100%; padding: 16px; border: none; border-radius: 10px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(30, 58, 138, 0.2); margin-top: 10px; }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(30, 58, 138, 0.3); }
+        .btn-login:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* 🌟 الإشعارات */
+        #toast { visibility: hidden; min-width: 250px; background-color: #e74c3c; color: white; text-align: center; border-radius: 8px; padding: 15px; position: fixed; z-index: 10000; top: 30px; left: 50%; transform: translateX(-50%); font-size: 14px; font-weight: bold; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: 0.4s; opacity: 0; }
+        #toast.show { visibility: visible; top: 50px; opacity: 1; }
+        
+        /* بصمة النظام */
+        .system-badge { margin-top: 30px; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+    </style>
+</head>
+<body>
+
+    <div id="toast">رسالة الخطأ تظهر هنا</div>
+
+    <div class="login-container">
+        <div class="logo-icon">🏛️</div>
+        <h2>بوابة الإدارة الإلكترونية</h2>
+        <p>الولوج الخاص بموظفي تدبير الملك العمومي</p>
+
+        <form id="loginForm" onsubmit="soumettreLogin(event)">
+            <div class="form-group">
+                <label>البريد الإلكتروني المهني</label>
+                <input type="email" id="email" class="form-control" placeholder="exemple@commune.ma" required autocomplete="email" dir="ltr">
+            </div>
+            
+            <div class="form-group">
+                <label>كلمة المرور</label>
+                <input type="password" id="password" class="form-control" placeholder="••••••••" required autocomplete="current-password" dir="ltr">
+            </div>
+
+            <button type="submit" id="btn-submit" class="btn-login">تسجيل الدخول 🔐</button>
+        </form>
+
+        <div class="system-badge">
+            نظام مؤمن بتقنية التشفير المتقدم (JWT & Bcrypt)
+        </div>
+    </div>
+
+    <script>
+       // التحقق مما إذا كان الموظف مسجلاً بالفعل لتوجيهه فوراً
+        window.onload = function() {
+            const token = localStorage.getItem('token');
+            const role = localStorage.getItem('userRole');
+            if (token && role) {
+                redirigerVersTableauDeBord(role);
+            }
+        };
+
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 4000);
+        }
+
+        async function soumettreLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const btn = document.getElementById('btn-submit');
+            
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ جاري التحقق من الهوية...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, mot_de_passe: password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('userRole', data.user.role);
+                    
+                    redirigerVersTableauDeBord(data.user.role);
+                } else {
+                    showToast(data.message);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                showToast("خطأ في الاتصال بالخادم. تأكد من تشغيل السيرفر.");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // 🛣️ دالة التوجيه الذكية (Router) مع صلاحية المدير
+        function redirigerVersTableauDeBord(role) {
+            const roleStr = role.toLowerCase().trim();
+            
+            if (roleStr === 'eco' || roleStr === 'economie') {
+                window.location.href = 'dashboard.html';
+            } 
+            else if (roleStr === 'urbanisme') {
+                window.location.href = 'urbanisme_dashboard.html';
+            } 
+            else if (roleStr === 'licence' || roleStr === 'licence+eco') {
+                window.location.href = 'licence_dashboard.html';
+            } 
+            // 👑 3. صلاحية المدير (Admin) - المفتاح الذهبي
+            else if (roleStr === 'admin') {
+                afficherMenuAdmin();
+            } 
+            else {
+                showToast("عذراً، لم يتم التعرف على صلاحيات حسابك. راجع مدير النظام.");
+                localStorage.clear();
+                document.getElementById('btn-submit').innerHTML = 'تسجيل الدخول 🔐';
+                document.getElementById('btn-submit').disabled = false;
+            }
+        }
+
+        // 👑 دالة تفعيل بوابة المدير العام (تُغير شكل الشاشة بالكامل)
+        // 🛣️ دالة التوجيه الذكية (Router) المبسطة والمباشرة
+        function redirigerVersTableauDeBord(role) {
+            const roleStr = role.toLowerCase().trim();
+            
+            if (roleStr === 'eco' || roleStr === 'economie') {
+                window.location.href = 'dashboard.html';
+            } 
+            else if (roleStr === 'urbanisme') {
+                window.location.href = 'urbanisme_dashboard.html';
+            } 
+            else if (roleStr === 'licence' || roleStr === 'licence+eco') {
+                window.location.href = 'licence_dashboard.html';
+            } 
+            // 👑 توجيه مباشر للمدير العام إلى برج المراقبة (بدون شاشة وسيطة)
+            else if (roleStr === 'admin') {
+                window.location.href = 'admin_dashboard.html';
+            } 
+            else {
+                showToast("عذراً، لم يتم التعرف على صلاحيات حسابك. راجع مدير النظام.");
+                localStorage.clear();
+                document.getElementById('btn-submit').innerHTML = 'تسجيل الدخول 🔐';
+                document.getElementById('btn-submit').disabled = false;
+            }
+        }
+        // 🗑️ ملاحظة: تم حذف دالة afficherMenuAdmin() بالكامل لعدم الحاجة إليها بعد الآن.
+
+        function seDeconnecterAdmin() {
+            localStorage.clear();
+            location.reload(); // إعادة تحميل الصفحة للرجوع لشاشة الدخول العادية
+        }
+    </script>
+</body>
+</html>

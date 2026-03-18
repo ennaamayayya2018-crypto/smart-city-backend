@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>لوحة الإدارة - إنشاء الحسابات</title>
+    <style>
+        body { font-family: Arial; padding: 40px; background-color: #ecf0f1; }
+        /* لون أزرق داكن للإدارة المركزية */
+        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 500px; margin: auto; border-top: 5px solid #2980b9; }
+        input, select, button { width: 100%; padding: 12px; margin-top: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { background-color: #2980b9; color: white; font-weight: bold; cursor: pointer; border: none; font-size: 16px; }
+        button:hover { background-color: #34495e; }
+        #resultat { padding: 15px; border-radius: 5px; margin-top: 20px; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2 style="text-align: center; color: #2c3e50;">إدارة النظام - إضافة موظف 🛡️</h2>
+        
+        <form id="registerForm">
+            <label><b>الاسم الكامل للموظف:</b></label>
+            <input type="text" id="nom_complet" required placeholder="مثال: المهندس إينا">
+
+            <label><b>البريد الإلكتروني (لتسجيل الدخول):</b></label>
+            <input type="email" id="email" required placeholder="admin@commune.ma">
+
+            <label><b>كلمة السر (سيتم تشفيرها):</b></label>
+            <input type="password" id="mot_de_passe" required placeholder="*****">
+
+            <label><b>الدور / الصلاحية:</b></label>
+            <select id="role" required>
+                <option value="" disabled selected>-- حدد مصلحة الموظف --</option>
+                <option value="admin">⭐ مدير النظام (Admin)</option>
+                <option value="eco">💼 موظف المكتب الاقتصادي</option>
+                <option value="urbanisme">📐 مهندس مصلحة التعمير</option>
+                <option value="licence">📜 موظف مصلحة الرخص</option>
+            </select>
+
+            <button type="submit">إنشاء الحساب وتشفير البيانات 🔒</button>
+        </form>
+
+        <div id="resultat"></div>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // جمع البيانات
+            const nom_complet = document.getElementById('nom_complet').value;
+            const email = document.getElementById('email').value;
+            const mot_de_passe = document.getElementById('mot_de_passe').value;
+            const role = document.getElementById('role').value;
+
+            try {
+                // إرسال البيانات للخادم
+                const response = await fetch('http://localhost:3000/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nom_complet, email, mot_de_passe, role })
+                });
+
+                const data = await response.json();
+                const divResultat = document.getElementById('resultat');
+                divResultat.style.display = 'block';
+
+                if (response.ok) {
+                    divResultat.style.backgroundColor = '#d4edda';
+                    divResultat.style.color = '#155724';
+                    divResultat.innerHTML = `<b>نجاح:</b> ${data.message} <br> <b>حساب:</b> ${data.user.nom_complet} (${data.user.role})`;
+                    document.getElementById('registerForm').reset(); // إفراغ الخانات
+                } else {
+                    divResultat.style.backgroundColor = '#f8d7da';
+                    divResultat.style.color = '#721c24';
+                    divResultat.innerHTML = `<b>خطأ:</b> ${data.message}`;
+                }
+            } catch (error) {
+                alert('حدث خطأ في الاتصال بالخادم!');
+            }
+        });
+    </script>
+</body>
+</html>

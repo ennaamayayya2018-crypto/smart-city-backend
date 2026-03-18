@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>تتبع حالة الطلب</title>
+    <style>
+        body { font-family: Arial; padding: 50px; background-color: #ecf0f1; text-align: center; }
+        .search-box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        input { width: 80%; padding: 12px; border: 2px solid #3498db; border-radius: 5px; font-size: 18px; text-align: center; }
+        button { padding: 12px 25px; background: #3498db; color: white; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px; }
+        #status-card { margin-top: 30px; display: none; background: #fff; padding: 20px; border-radius: 10px; border-right: 5px solid #2ecc71; }
+        .progress-container { background: #ddd; height: 10px; border-radius: 5px; margin: 20px 0; }
+        .progress-bar { background: #2ecc71; height: 100%; border-radius: 5px; transition: width 0.5s; }
+    </style>
+</head>
+<body>
+
+    <div class="search-box">
+        <h2>تتبع طلبك 🔍</h2>
+        <input type="text" id="trackCode" placeholder="أدخل رقم التتبع (TRK-...)">
+        <br>
+        <button onclick="trackNow()">بحث عن الحالة</button>
+
+        <div id="status-card">
+            <h3 id="res-nom"></h3>
+            <p id="res-type"></p>
+            <div class="progress-container"><div id="res-bar" class="progress-bar"></div></div>
+            <p id="res-etat" style="font-weight: bold; color: #2c3e50;"></p>
+        </div>
+    </div>
+
+    <script>
+        async function trackNow() {
+            const code = document.getElementById('trackCode').value;
+            const card = document.getElementById('status-card');
+            try {
+                const response = await fetch(`http://localhost:3000/api/citoyen/suivi/${code}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    card.style.display = 'block';
+                    document.getElementById('res-nom').innerText = data.nom;
+                    document.getElementById('res-type').innerText = "نوع الطلب: " + data.type;
+                    document.getElementById('res-etat').innerText = data.etat;
+                    document.getElementById('res-bar').style.width = data.progression + "%";
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) { alert("خطأ في الاتصال بالخادم"); }
+        }
+    </script>
+</body>
+</html>
