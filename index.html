@@ -122,7 +122,7 @@
                 </div>
 
                 <div class="form-group" style="margin-top: 30px;">
-                    <label>الوثائق المرفقة <span style="color: var(--danger); font-size: 13px;">(إجباري إرفاق وثيقتين على الأقل كصيغة PDF أو صور)</span></label>
+                    <label>الوثائق المرفقة <span style="color: var(--danger); font-size: 13px;">(إجباري إرفاق البطاقة الوطنية والتصميم)</span></label>
                     <div class="upload-grid">
                         <div class="upload-box" id="box-doc1">
                             <span class="upload-icon">📄</span>
@@ -225,15 +225,12 @@
         async function soumettreDemande(event) {
             event.preventDefault(); // منع إعادة تحميل الصفحة
             
-            // 🛡️ حماية الواجهة: التحقق من وجود وثيقتين على الأقل قبل إزعاج الخادم
+            // 🛡️ حماية الواجهة المحدثة: التحقق من وجود البطاقة والتصميم تحديداً
             const doc1 = document.getElementById('document_1').files.length;
             const doc2 = document.getElementById('document_2').files.length;
-            const doc3 = document.getElementById('document_3').files.length;
-            const doc4 = document.getElementById('document_4').files.length;
             
-            const totalDocs = doc1 + doc2 + doc3 + doc4;
-            if (totalDocs < 2) {
-                showToast("⚠️ عذراً، يجب إرفاق البطاقة الوطنية والتصميم (وثيقتين على الأقل) لإتمام الطلب.");
+            if (doc1 === 0 || doc2 === 0) {
+                showToast("⚠️ عذراً، يجب إرفاق نسخة البطاقة الوطنية والتصميم الهندسي (الوثيقتين 1 و 2) لإتمام الطلب.");
                 return;
             }
 
@@ -247,10 +244,10 @@
                 const formElement = document.getElementById('demandeForm');
                 const formData = new FormData(formElement);
 
-                // 📡 إرسال الطرد للخادم
-                const response = await fetch('http://localhost:3000/api/citoyen/nouvelle-demande', {
+                // 📡 إرسال الطرد للخادم (تم تعديل الرابط)
+                const response = await fetch('https://smart-city-api-862628887937.europe-west1.run.app/api/citoyen/nouvelle-demande', {
                     method: 'POST',
-                    body: formData
+                    body: formData // FormData تقوم بضبط الـ Headers تلقائياً، هذا ممتاز!
                 });
 
                 const data = await response.json();
@@ -296,7 +293,8 @@
             btn.disabled = true;
 
             try {
-                const response = await fetch(`http://localhost:3000/api/citoyen/suivi/${code}`);
+                // (تم تعديل الرابط)
+                const response = await fetch(`https://smart-city-api-862628887937.europe-west1.run.app/api/citoyen/suivi/${code}`);
                 const data = await response.json();
 
                 const resultBox = document.getElementById('tracking-result');

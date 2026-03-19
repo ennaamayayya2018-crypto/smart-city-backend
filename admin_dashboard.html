@@ -326,7 +326,7 @@
 
         async function fetchAdminData(endpoint) {
             try {
-                const response = await fetch(`http://localhost:3000/api/admin/${endpoint}`, {
+                const response = await fetch(`https://smart-city-api-862628887937.europe-west1.run.app/api/admin/${endpoint}`, {
                     method: 'GET',
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
@@ -532,6 +532,46 @@
             data.evolution_mensuelle.forEach(item => { dataBar[parseInt(item.mois) - 1] = item.count; });
             if (barChartInstance) barChartInstance.destroy();
             barChartInstance = new Chart(barCtx, { type: 'bar', data: { labels: moisNoms, datasets: [{ label: 'الطلبات', data: dataBar, backgroundColor: '#10b981', borderRadius: 5 }] }, options: { scales: { y: { ticks: { color: '#94a3b8', stepSize: 1 } }, x: { ticks: { color: '#94a3b8' } } }, plugins: { legend: { display: false } } } });
+        }
+        // 🚀 دالة إضافة موظف جديد (التي كانت مفقودة)
+        async function soumettreNouvelEmploye(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById('btn-add-user');
+            const originalText = btn.innerText;
+            btn.innerText = '⏳ جاري الإنشاء والتشفير...';
+            btn.disabled = true;
+
+            const nom_complet = document.getElementById('nom_complet').value;
+            const email = document.getElementById('email').value;
+            const mot_de_passe = document.getElementById('mot_de_passe').value;
+            const role_employe = document.getElementById('role').value;
+
+            try {
+                const response = await fetch('https://smart-city-api-862628887937.europe-west1.run.app/api/admin/register', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ nom_complet, email, mot_de_passe, role: role_employe })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showToast('تم إنشاء حساب الموظف بنجاح! ✅');
+                    document.getElementById('registerForm').reset();
+                    fetchUsers(); // تحديث الجدول فوراً ليظهر الموظف الجديد
+                } else {
+                    showToast(data.message || 'حدث خطأ أثناء الإضافة', true);
+                }
+            } catch (error) {
+                showToast('خطأ في الاتصال بالسيرفر!', true);
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
         }
 
         function deconnexion() { localStorage.clear(); window.location.href = 'login.html'; }

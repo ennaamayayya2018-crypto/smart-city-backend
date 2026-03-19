@@ -201,8 +201,8 @@
 
         async function chargerDemandes() {
             try {
-                // 📡 الاتصال بمسار التعمير
-                const response = await fetch('http://localhost:3000/api/urbanisme/demandes', {
+                // 📡 الاتصال بمسار التعمير (تم التعديل)
+                const response = await fetch('https://smart-city-api-862628887937.europe-west1.run.app/api/urbanisme/demandes', {
                     method: 'GET',
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
@@ -274,7 +274,8 @@
                         hasDocs = true;
                         let fixedPath = docPath.replace(/\\/g, '/');
                         const cleanPath = fixedPath.startsWith('uploads') ? fixedPath : `uploads/${fixedPath}`;
-                        const fileUrl = `http://localhost:3000/${cleanPath}`;
+                        // (تم التعديل هنا)
+                        const fileUrl = `https://smart-city-api-862628887937.europe-west1.run.app/${cleanPath}`;
                         const isPdf = fixedPath.toLowerCase().endsWith('.pdf');
                         const icon = isPdf ? '📄' : '🖼️';
                         
@@ -337,8 +338,8 @@
             btnElement.disabled = true;
 
             try {
-                // 📡 إرسال البيانات بأسماء المتغيرات التي يطلبها urbanismeController בדיוק
-                const response = await fetch(`http://localhost:3000/api/urbanisme/avis`, {
+                // 📡 إرسال البيانات بأسماء المتغيرات التي يطلبها urbanismeController (تم التعديل)
+                const response = await fetch(`https://smart-city-api-862628887937.europe-west1.run.app/api/urbanisme/avis`, {
                     method: 'PUT',
                     headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
@@ -374,8 +375,8 @@
     </script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
-    // 1. الاتصال برادار الخادم
-    const socket = io('http://localhost:3000');
+    // 1. الاتصال برادار الخادم (تم التعديل)
+    const socket = io('https://smart-city-api-862628887937.europe-west1.run.app');
     
     // 2. دالة تشغيل صوت التنبيه وإظهار الإشعار المرئي
     function declencherAlerte(donnees, couleur) {
