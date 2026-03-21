@@ -4,6 +4,12 @@ const path = require('path'); // للتعامل مع مسارات الملفات
 const cors = require('cors');
 const db = require('./config/db'); // هنا نستدعي الجسر الذي صنعناه في الخطوة السابقة!
 
+const fs = require('fs');
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
+
 // 🚨 الإضافة الجديدة 1: استدعاء مكتبات الويب سوكيت
 const http = require('http');
 const { Server } = require('socket.io');

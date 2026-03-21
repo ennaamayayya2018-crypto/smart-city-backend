@@ -1,18 +1,21 @@
 const { Pool } = require('pg');
-require('dotenv').config(); // لضمان قراءة المتغيرات
+require('dotenv').config();
 
-// إعدادات الاتصال بقاعدة البيانات (النسخة السحابية الذكية)
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false // 🛡️ هذا السطر إجباري جداً لكي تقبل Neon الاتصال
-    }
+    ssl: { rejectUnauthorized: false },
+    // ⚙️ إعدادات سحابية لمنع انقطاع الاتصال
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
 });
 
-// اختبار الاتصال //
+// 🛡️ هذا السطر السحري يمنع السيرفر من الانهيار إذا انقطع الاتصال فجأة
+pool.on('error', (err) => {
+    console.error('❌ خطأ مفاجئ في اتصال قاعدة البيانات (تم التجاوز):', err.message);
+});
+
 pool.connect()
     .then(() => console.log('✅ تم الاتصال بقاعدة البيانات السحابية بنجاح!'))
-    .catch((err) => console.error('❌ خطأ في الاتصال بقاعدة البيانات:', err.message));
+    .catch((err) => console.error('❌ خطأ في الاتصال:', err.message));
 
-// تصدير الجسر //
 module.exports = pool;
