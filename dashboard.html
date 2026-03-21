@@ -390,11 +390,16 @@
         function fermerModal() { document.getElementById('modalTraitement').style.display = 'none'; }
 
         function openViewer(url) {
-        // نمرر الرابط مباشرة للنافذة، المتصفح سيتعرف على صيغة .pdf تلقائياً بفضل تعديل السيرفر الأخير
-          document.getElementById('viewerFrame').src = url;
-          document.getElementById('documentViewer').style.display = 'block';
-
-   } 
+    let finalUrl = url;
+    
+    // 🧠 الاستعانة بمحرك جوجل لعرض ملفات الـ PDF داخل النافذة بسلاسة
+    if (url.toLowerCase().includes('.pdf')) {
+        finalUrl = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
+    }
+    
+    document.getElementById('viewerFrame').src = finalUrl;
+    document.getElementById('documentViewer').style.display = 'block';
+}
 
         function closeViewer() {
             document.getElementById('documentViewer').style.display = 'none';
