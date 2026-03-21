@@ -1,18 +1,18 @@
 const { Pool } = require('pg');
+require('dotenv').config(); // لضمان قراءة المتغيرات
 
-// إعدادات الاتصال بقاعدة البيانات الخاصة بمشروعنا
+// إعدادات الاتصال بقاعدة البيانات (النسخة السحابية الذكية)
 const pool = new Pool({
-    user: 'postgres',             
-    host: 'localhost',            
-    database: 'domaine_public_db',
-    password: 'admin',            
-    port: 5432,                   
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false // 🛡️ هذا السطر إجباري جداً لكي تقبل Neon الاتصال
+    }
 });
 
-// اختبار الاتصال
+// اختبار الاتصال //
 pool.connect()
-    .then(() => console.log('✅ تم الاتصال بقاعدة البيانات domaine_public_db بنجاح!'))
+    .then(() => console.log('✅ تم الاتصال بقاعدة البيانات السحابية بنجاح!'))
     .catch((err) => console.error('❌ خطأ في الاتصال بقاعدة البيانات:', err.message));
 
-// تصدير الجسر
+// تصدير الجسر //
 module.exports = pool;
