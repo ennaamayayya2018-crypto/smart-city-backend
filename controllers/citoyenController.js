@@ -11,16 +11,15 @@ cloudinary.config({
 // 🚀 التعديل الذهبي: الاحتفاظ بصيغة الملف (PDF) لكي يقرأه المتصفح
 const uploadToCloudinary = (fileBuffer, originalName) => {
     return new Promise((resolve, reject) => {
-        // نتحقق مما إذا كان الملف PDF
         const isPdf = originalName.toLowerCase().endsWith('.pdf');
         
         const stream = cloudinary.uploader.upload_stream(
             { 
                 folder: "smart_city_permits", 
-                // إذا كان PDF نحفظه كملف خام (raw) لنحافظ على امتداده
-                resource_type: isPdf ? "raw" : "auto", 
-                // نضيف .pdf في نهاية اسم الملف السحابي
-                public_id: `document_${Date.now()}` + (isPdf ? ".pdf" : "")
+                // 💡 نستخدم auto ليسمح المتصفح بعرضه داخل الموقع
+                resource_type: "auto", 
+                // 💡 نجبر السحابة على حفظه كملف PDF سليم قابل للقراءة
+                format: isPdf ? "pdf" : undefined 
             },
             (error, result) => {
                 if (error) reject(error);
