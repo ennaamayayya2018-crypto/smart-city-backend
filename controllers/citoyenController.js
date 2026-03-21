@@ -1,82 +1,81 @@
-const db = require('../config/db'); 
+const cloudinary = require('cloudinary').v2;
+const db = require('../config/db');
+
+// 🔑 إعدادات الربط مع سحابة Cloudinary (تم استخراجها من حسابك)
+cloudinary.config({ 
+  cloud_name: 'dswrytidw', 
+  api_key: '511245475377128', 
+  api_secret: 'wGyeC6HjBxP4BxZItqp96kMpcXU' // ⚠️ استبدلي هذا النص بالسر الحقيقي الذي ظهر لكِ
+});
 
 // ==========================================
-// دالة: تسجيل طلب جديد من طرف المواطن (مرونة الوثائق)
+// دالة: تسجيل طلب جديد من طرف المواطن (الرفع للسحابة)
 // ==========================================
 const soumettreDemande = async (req, res) => {
     try {
-        // 1. استلام البيانات النصية
         const { type_demande, nom_complet, cin, numero_whatsapp } = req.body;
+        const files = req.files || {};
 
-        // 2. التحقق من النصوص
-        if (!type_demande || !nom_complet || !cin || !numero_whatsapp) {
-            return res.status(400).json({ message: 'تنبيه: المرجو ملء جميع الحقول النصية.' });
+        // التحقق من وجود وثيقتين على الأقل
+        if (Object.keys(files).length < 2) {
+            return res.status(400).json({ message: 'تنبيه: يجب إرفاق وثيقتين على الأقل.' });
         }
 
-        // 3. 🚨 التعديل الجديد: التحقق من عدد الوثائق المرفوعة 🚨
-        const files = req.files || {}; // استلام الملفات من الحارس
-        const nombreDeDocuments = Object.keys(files).length; // حساب عدد الوثائق المرفوعة
-
-        // إذا كان عدد الوثائق أقل من 2، نوقف العملية
-        if (nombreDeDocuments < 2) {
-            return res.status(400).json({ 
-                message: 'تنبيه: يجب إرفاق وثيقتين على الأقل (بصيغة PDF) لإتمام تسجيل الطلب.' 
+        // دالة الرفع للسحابة (تحويل Buffer إلى رابط سحابي دائم)
+        const uploadFile = (file) => {
+            return new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    { folder: "smart_city_permits", resource_type: "auto" },
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve(result.secure_url);
+                    }
+                );
+                stream.end(file[0].buffer);
             });
+        };
+
+        // رفع الملفات بالتوازي لضمان السرعة
+        const uploadPromises = [];
+        for (let i = 1; i <= 4; i++) {
+            if (files[`document_${i}`]) {
+                uploadPromises.push(uploadFile(files[`document_${i}`]));
+            } else {
+                uploadPromises.push(Promise.resolve(null));
+            }
         }
 
-        // 4. استخراج المسارات بأمان (إذا لم يرفع الوثيقة، نضع مكانها null لكي لا يغضب الخادم)
-        // استخراج اسم الملف فقط لكي لا نُفسد الروابط
-          const doc1_path = files.document_1 ? files.document_1[0].filename : null;
-          const doc2_path = files.document_2 ? files.document_2[0].filename : null;
-          const doc3_path = files.document_3 ? files.document_3[0].filename : null;
-          const doc4_path = files.document_4 ? files.document_4[0].filename : null;
+        const [url1, url2, url3, url4] = await Promise.all(uploadPromises);
 
-        // 5. توليد رقم تتبع فريد
         const code_suivi = 'TRK-' + Date.now();
-
-        // 6. أمر SQL الشامل
         const query = `
             INSERT INTO demandes 
-            (code_suivi, type_demande, nom_complet, cin, numero_whatsapp, document_1, document_2, document_3, document_4)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            (code_suivi, type_demande, nom_complet, cin, numero_whatsapp, document_1, document_2, document_3, document_4, statut)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'en_attente_eco')
             RETURNING code_suivi;
         `;
         
-        // 7. القيم التي ستُرسل لقاعدة البيانات
-        const values = [
-            code_suivi, type_demande, nom_complet, cin, numero_whatsapp, 
-            doc1_path, doc2_path, doc3_path, doc4_path
-        ];
-
-        // 8. التنفيذ
+        const values = [code_suivi, type_demande, nom_complet, cin, numero_whatsapp, url1, url2, url3, url4];
         const result = await db.query(query, values);
 
-        // إطلاق إشعار لحظي للمكتب الاقتصادي
-         req.app.get('io').emit('alerte_eco', { 
-         message: `طلب جديد من المواطن: ${nom_complet}`, 
-           code: code_suivi 
-        });
-
-        // 9. إرسال استجابة النجاح
         res.status(201).json({
-            message: 'تم تسجيل الطلب بنجاح! احتفظ برقم التتبع الخاص بك.',
+            message: 'تم تسجيل طلبك بنجاح في السحابة الدائمة!',
             code_suivi: result.rows[0].code_suivi
         });
 
     } catch (error) {
-        console.error('❌ خطأ أثناء تسجيل طلب المواطن:', error);
-        res.status(500).json({ message: 'حدث خطأ في الخادم أثناء معالجة الطلب.' });
+        console.error('❌ خطأ في الرفع السحابي:', error);
+        res.status(500).json({ message: 'فشل الرفع السحابي، يرجى التحقق من الإعدادات.' });
     }
 };
 
-
-
+// ==========================================
 // دالة تتبع الملف للمواطن
+// ==========================================
 const suivreDemande = async (req, res) => {
     try {
-        const { code } = req.params; // سنمرر الكود عبر الرابط
+        const { code } = req.params;
 
-        // نجلب فقط البيانات التي يحق للمواطن رؤيتها
         const query = `SELECT nom_complet, type_demande, statut, observations FROM demandes WHERE code_suivi = $1`;
         const result = await db.query(query, [code]);
 
@@ -88,7 +87,6 @@ const suivreDemande = async (req, res) => {
         let statusMessage = "";
         let progressPercent = 0;
 
-        // محرك ترجمة الحالات (Status Engine)
         switch (info.statut) {
             case 'en_attente_eco':
                 statusMessage = "ملفك في طور المراجعة الأولية لدى المكتب الاقتصادي.";
@@ -132,9 +130,8 @@ const suivreDemande = async (req, res) => {
     }
 };
 
-// أضفها هنا
-// التصدير المصحح
+// التصدير
 module.exports = {
-    soumettreDemande, // غيرنا الاسم هنا ليتطابق مع اسم الدالة في الأعلى
+    soumettreDemande,
     suivreDemande 
 };
