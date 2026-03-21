@@ -307,6 +307,7 @@
             afficherTableau(resultats);
         }
 
+        // ====== הדالة المعدلة للسحابة ======
         function ouvrirModal(id) {
             const demande = listeDemandes.find(d => d.id === id);
             
@@ -321,30 +322,35 @@
                 const docBox = document.getElementById('m-documents');
                 docBox.innerHTML = '';
                 let hasDocs = false;
+
                 for (let i = 1; i <= 4; i++) {
                    const docPath = demande[`document_${i}`];
                    if (docPath) {
                        hasDocs = true;
         
-                       // 🛡️ الحل الجذري: استخراج اسم الملف فقط وتجاهل /tmp/ أو أي مسار آخر
-                        const nomFichier = docPath.split('/').pop().split('\\').pop();
+                       // 🌟 التعديل السحابي: التحقق من نوع الرابط
+                       let fileUrl = docPath; 
+                       
+                       // إذا كان الملف قديماً (تم رفعه قبل Cloudinary ولا يبدأ بـ http)
+                       if (!docPath.startsWith('http')) {
+                           const nomFichier = docPath.split('/').pop().split('\\').pop();
+                           fileUrl = `https://smart-city-api-862628887937.europe-west1.run.app/uploads/${nomFichier}`;
+                       }
+
+                       // تحديد أيقونة الملف بناءً على الرابط النهائي
+                       const isPdf = fileUrl.toLowerCase().includes('.pdf');
+                       const icon = isPdf ? '📄' : '🖼️';
         
-                        // 🔗 تركيب الرابط الصحيح الذي يشير مباشرة إلى مجلد uploads في السيرفر
-                       const fileUrl = `https://smart-city-api-862628887937.europe-west1.run.app/uploads/${nomFichier}`;
-        
-                        const isPdf = nomFichier.toLowerCase().endsWith('.pdf');
-                          const icon = isPdf ? '📄' : '🖼️';
-        
-                         docBox.innerHTML += `
-                        <div class="doc-card">
-                        <div class="doc-icon" onclick="openViewer('${fileUrl}')" title="انقر للمعاينة">${icon}</div>
-                        <div style="font-weight: bold; color: #334155; font-size: 14px;">وثيقة المرفق ${i}</div>
-                       <div class="doc-actions">
-                       <button class="doc-btn btn-view" onclick="openViewer('${fileUrl}')">👁️ معاينة</button>
-                       <a href="${fileUrl}" target="_blank" download class="doc-btn btn-down" style="text-align:center;">📥 تحميل</a>
-                      </div>
-                      </div>
-                     `;
+                       docBox.innerHTML += `
+                       <div class="doc-card">
+                           <div class="doc-icon" onclick="openViewer('${fileUrl}')" title="انقر للمعاينة">${icon}</div>
+                           <div style="font-weight: bold; color: #334155; font-size: 14px;">وثيقة المرفق ${i}</div>
+                           <div class="doc-actions">
+                               <button class="doc-btn btn-view" onclick="openViewer('${fileUrl}')">👁️ معاينة</button>
+                               <a href="${fileUrl}" target="_blank" download class="doc-btn btn-down" style="text-align:center;">📥 تحميل</a>
+                           </div>
+                       </div>
+                       `;
                   }
                 }
 
