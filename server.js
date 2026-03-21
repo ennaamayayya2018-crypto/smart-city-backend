@@ -23,7 +23,7 @@ const port = process.env.PORT || 3000;
 app.use(cors()); // السماح لواجهات التطبيق بالتواصل مع الخادم
 app.use(express.json()); // السماح للخادم بفهم البيانات المكتوبة بصيغة JSON
 // السماح للمتصفح بقراءة الملفات المرفوعة داخل مجلد uploads
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(os.tmpdir()));
 // السماح للخادم بعرض ملفات واجهة المستخدم (HTML والصور للزوار)
 app.use(express.static(__dirname));
 

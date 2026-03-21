@@ -25,10 +25,11 @@ const soumettreDemande = async (req, res) => {
         }
 
         // 4. استخراج المسارات بأمان (إذا لم يرفع الوثيقة، نضع مكانها null لكي لا يغضب الخادم)
-        const doc1_path = files.document_1 ? files.document_1[0].path : null;
-        const doc2_path = files.document_2 ? files.document_2[0].path : null;
-        const doc3_path = files.document_3 ? files.document_3[0].path : null;
-        const doc4_path = files.document_4 ? files.document_4[0].path : null;
+        // استخراج اسم الملف فقط لكي لا نُفسد الروابط
+          const doc1_path = files.document_1 ? files.document_1[0].filename : null;
+          const doc2_path = files.document_2 ? files.document_2[0].filename : null;
+          const doc3_path = files.document_3 ? files.document_3[0].filename : null;
+          const doc4_path = files.document_4 ? files.document_4[0].filename : null;
 
         // 5. توليد رقم تتبع فريد
         const code_suivi = 'TRK-' + Date.now();
