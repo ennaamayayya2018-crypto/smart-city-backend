@@ -390,9 +390,17 @@
         function fermerModal() { document.getElementById('modalTraitement').style.display = 'none'; }
 
         function openViewer(url) {
-            document.getElementById('viewerFrame').src = url;
-            document.getElementById('documentViewer').style.display = 'block';
-        }
+          let finalUrl = url;
+    
+             // 🧠 إذا كان الملف PDF، نمرره عبر محرك عرض جوجل لضمان ظهوره في الـ iframe
+              if (url.toLowerCase().includes('.pdf')) {
+                finalUrl = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
+           }
+    
+            document.getElementById('viewerFrame').src = finalUrl;
+           document.getElementById('documentViewer').style.display = 'block';
+     }
+
         function closeViewer() {
             document.getElementById('documentViewer').style.display = 'none';
             document.getElementById('viewerFrame').src = ''; 
