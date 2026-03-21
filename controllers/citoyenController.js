@@ -8,17 +8,25 @@ cloudinary.config({
   api_secret: 'wGyeC6HjBxP4BxZItqp96kMpcXU' 
 });
 
-// دالة الرفع: تأخذ الـ buffer مباشرة وترسله للسحابة
-const uploadToCloudinary = (fileBuffer) => {
+// 🚀 التعديل الذهبي: الاحتفاظ بصيغة الملف (PDF) لكي يقرأه المتصفح
+const uploadToCloudinary = (fileBuffer, originalName) => {
     return new Promise((resolve, reject) => {
+        // نتحقق مما إذا كان الملف PDF
+        const isPdf = originalName.toLowerCase().endsWith('.pdf');
+        
         const stream = cloudinary.uploader.upload_stream(
-            { folder: "smart_city_permits", resource_type: "auto" },
+            { 
+                folder: "smart_city_permits", 
+                // إذا كان PDF نحفظه كملف خام (raw) لنحافظ على امتداده
+                resource_type: isPdf ? "raw" : "auto", 
+                // نضيف .pdf في نهاية اسم الملف السحابي
+                public_id: `document_${Date.now()}` + (isPdf ? ".pdf" : "")
+            },
             (error, result) => {
                 if (error) reject(error);
                 else resolve(result.secure_url);
             }
         );
-        // 🚀 هنا نمرر الـ buffer الفعلي للملف
         stream.end(fileBuffer);
     });
 };
@@ -35,10 +43,9 @@ const soumettreDemande = async (req, res) => {
         const uploadPromises = [];
         for (let i = 1; i <= 4; i++) {
             const fieldName = `document_${i}`;
-            // التأكد من أن الحقل موجود ويحتوي على ملف
             if (files[fieldName] && files[fieldName][0]) {
-                // نمرر الـ buffer الموجود في الذاكرة
-                uploadPromises.push(uploadToCloudinary(files[fieldName][0].buffer));
+                // 💡 هنا نمرر الـ buffer واسم الملف الأصلي معاً
+                uploadPromises.push(uploadToCloudinary(files[fieldName][0].buffer, files[fieldName][0].originalname));
             } else {
                 uploadPromises.push(Promise.resolve(null));
             }
@@ -68,7 +75,6 @@ const soumettreDemande = async (req, res) => {
     }
 };
 
-// ... دالة suivreDemande تبقى كما هي لديكِ ...
 const suivreDemande = async (req, res) => {
     try {
         const { code } = req.params;
@@ -77,8 +83,21 @@ const suivreDemande = async (req, res) => {
         if (result.rowCount === 0) return res.status(404).json({ message: 'رقم التتبع غير موجود.' });
         
         const info = result.rows[0];
-        // ... منطق الحالات كما هو ...
-        res.status(200).json({ nom: info.nom_complet, type: info.type_demande, etat: "قيد المعالجة", progression: 50 });
+        let statusMessage = "";
+        let progressPercent = 0;
+
+        switch (info.statut) {
+            case 'en_attente_eco': statusMessage = "ملفك في طور المراجعة الأولية لدى المكتب الاقتصادي."; progressPercent = 25; break;
+            case 'en_attente_urbanisme': statusMessage = "ملفك قيد الدراسة التقنية والهندسية لدى مصلحة التعمير."; progressPercent = 50; break;
+            case 'retour_urb_favorable':
+            case 'retour_urb_defavorable': statusMessage = "انتهت الدراسة التقنية، والملف الآن في طور القرار النهائي لدى المكتب الاقتصادي."; progressPercent = 75; break;
+            case 'en_attente_licence': statusMessage = "مبروك! تمت الموافقة النهائية، ملفك الآن لدى مصلحة الرخص لإعداد الوثيقة النهائية."; progressPercent = 90; break;
+            case 'autorise': statusMessage = "رخصتك جاهزة! المرجو الحضور لمقر الجماعة (مصلحة الرخص) لاستلامها شخصياً."; progressPercent = 100; break;
+            case 'rejete': statusMessage = `للأسف تم رفض الطلب. السبب: ${info.observations || 'غير محدد'}`; progressPercent = 100; break;
+            default: statusMessage = "الملف قيد المعالجة."; progressPercent = 10;
+        }
+
+        res.status(200).json({ nom: info.nom_complet, type: info.type_demande, etat: statusMessage, progression: progressPercent });
     } catch (error) { res.status(500).json({ message: 'خطأ في التتبع.' }); }
 };
 
