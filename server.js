@@ -23,7 +23,32 @@ const port = process.env.PORT || 3000;
 app.use(cors()); // السماح لواجهات التطبيق بالتواصل مع الخادم
 app.use(express.json()); // السماح للخادم بفهم البيانات المكتوبة بصيغة JSON
 // السماح للمتصفح بقراءة الملفات المرفوعة داخل مجلد uploads
-app.use('/uploads', express.static(os.tmpdir()));
+// ==========================================
+// مسار تحميل ومعاينة الملفات (مضاد لفقدان الذاكرة السحابي)
+// ==========================================
+const fs = require('fs');
+const os = require('os');
+
+app.get('/uploads/:filename', (req, res) => {
+    const fileName = req.params.filename;
+    const filePath = path.join(os.tmpdir(), fileName);
+
+    // التحقق هل الملف لا يزال موجوداً أم تبخر في السحابة؟
+    if (fs.existsSync(filePath)) {
+        // إذا كان موجوداً، نرسله فوراً للواجهة
+        res.sendFile(filePath);
+    } else {
+        // إذا تبخر، نرسل رسالة واضحة للمبرمجة!
+        console.error(`❌ الملف مفقود: ${filePath}`);
+        res.status(404).send(`
+            <div style="text-align:center; padding:50px; font-family:tahoma;">
+                <h2 style="color:red;">عذراً، الملف غير موجود!</h2>
+                <p>يبدو أن سيرفر Google Cloud قام بمسح الذاكرة المؤقتة (Stateless Container).</p>
+                <p>اسم الملف المفقود: <b>${fileName}</b></p>
+            </div>
+        `);
+    }
+});
 // السماح للخادم بعرض ملفات واجهة المستخدم (HTML والصور للزوار)
 app.use(express.static(__dirname));
 
