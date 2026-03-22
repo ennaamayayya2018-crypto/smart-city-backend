@@ -272,24 +272,31 @@
                     const docPath = demande[`document_${i}`];
                     if (docPath) {
                         hasDocs = true;
-                        let fixedPath = docPath.replace(/\\/g, '/');
-                        const cleanPath = fixedPath.startsWith('uploads') ? fixedPath : `uploads/${fixedPath}`;
-                        // (تم التعديل هنا)
-                        const fileUrl = `https://smart-city-api-862628887937.europe-west1.run.app/${cleanPath}`;
-                        const isPdf = fixedPath.toLowerCase().endsWith('.pdf');
-                        const icon = isPdf ? '📄' : '🖼️';
+        
+                        // 🌟 التعديل السحابي: التحقق من نوع الرابط
+                        let fileUrl = docPath; 
                         
+                        // إذا كان الملف قديماً (محلي)
+                        if (!docPath.startsWith('http')) {
+                            const nomFichier = docPath.split('/').pop().split('\\').pop();
+                            fileUrl = `https://smart-city-api-862628887937.europe-west1.run.app/uploads/${nomFichier}`;
+                        }
+
+                        // تحديد أيقونة الملف بناءً على الرابط النهائي
+                        const isPdf = fileUrl.toLowerCase().includes('.pdf');
+                        const icon = isPdf ? '📄' : '🖼️';
+        
                         docBox.innerHTML += `
-                            <div class="doc-card">
-                                <div class="doc-icon" onclick="openViewer('${fileUrl}')" title="انقر للمعاينة">${icon}</div>
-                                <div style="font-weight: bold; font-size: 14px;">مرفق ${i} (تصميم/وثيقة)</div>
-                                <div class="doc-actions">
-                                    <button class="doc-btn" onclick="openViewer('${fileUrl}')">👁️ معاينة</button>
-                                    <a href="${fileUrl}" target="_blank" download class="doc-btn" style="background:#3498db;">📥 تحميل</a>
-                                </div>
+                        <div class="doc-card">
+                            <div class="doc-icon" onclick="openViewer('${fileUrl}')" title="انقر للمعاينة">${icon}</div>
+                            <div style="font-weight: bold; font-size: 14px;">مرفق ${i} (تصميم/وثيقة)</div>
+                            <div class="doc-actions">
+                                <button class="doc-btn" style="background:var(--primary);" onclick="openViewer('${fileUrl}')">👁️ معاينة</button>
+                                <a href="${fileUrl}" target="_blank" download class="doc-btn" style="background:var(--success);">📥 تحميل</a>
                             </div>
+                        </div>
                         `;
-                    }
+                   }
                 }
 
                 if (!hasDocs) { docBox.innerHTML = '<p class="empty-state">لا توجد وثائق هندسية مرفقة</p>'; }
@@ -298,9 +305,33 @@
         }
 
         function fermerModal() { document.getElementById('modalTraitement').style.display = 'none'; }
-        function openViewer(url) { document.getElementById('viewerFrame').src = url; document.getElementById('documentViewer').style.display = 'block'; }
-        function closeViewer() { document.getElementById('documentViewer').style.display = 'none'; document.getElementById('viewerFrame').src = ''; }
+        // 🚀 الهندسة الجديدة للعرض: استخدام <object> لتجنب حظر المتصفحات
+        function openViewer(url) {
+            const viewerContainer = document.getElementById('documentViewer');
+            const isPdf = url.toLowerCase().includes('.pdf');
 
+            viewerContainer.innerHTML = '<span class="close-viewer" onclick="closeViewer()">&times;</span>';
+
+            if (isPdf) {
+                viewerContainer.innerHTML += `
+                    <object data="${url}" type="application/pdf" style="width: 85%; height: 90vh; margin: 2.5vh auto; display: block; border-radius: 12px; background: white;">
+                        <div style="text-align:center; padding-top:20%; color:white;">
+                            <h3>متصفحك لا يدعم العرض المباشر للـ PDF 😢</h3>
+                            <a href="${url}" target="_blank" style="color:#3498db; text-decoration:none; font-size:20px; font-weight:bold;">📥 اضغط هنا لفتح الملف أو تحميله</a>
+                        </div>
+                    </object>`;
+            } else {
+                viewerContainer.innerHTML += `<iframe src="${url}" style="width: 85%; height: 90vh; margin: 2.5vh auto; display: block; border: none; border-radius: 12px; background: white;"></iframe>`;
+            }
+
+            viewerContainer.style.display = 'block';
+        }
+
+        function closeViewer() {
+            const viewerContainer = document.getElementById('documentViewer');
+            viewerContainer.style.display = 'none';
+            viewerContainer.innerHTML = ''; 
+        }
         function openConfirm(avisTech, btnElement) {
             // التحقق من كتابة تعليل في حالة الرفض
             if (avisTech === 'retour_urb_defavorable' && document.getElementById('m-urb-notes').value.trim() === '') {
