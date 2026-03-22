@@ -389,15 +389,39 @@
 
         function fermerModal() { document.getElementById('modalTraitement').style.display = 'none'; }
 
-        function openViewer(url) {
-    document.getElementById('viewerFrame').src = url;
-    document.getElementById('documentViewer').style.display = 'block';
+        
+        // 🚀 الهندسة الجديدة للعرض: إنشاء نافذة العرض برمجياً لتجنب حظر المتصفحات
+function openViewer(url) {
+    const viewerContainer = document.getElementById('documentViewer');
+    const isPdf = url.toLowerCase().includes('.pdf');
+
+    // 1. تنظيف الحاوية ووضع زر الإغلاق
+    viewerContainer.innerHTML = '<span class="close-viewer" onclick="closeViewer()">&times;</span>';
+
+    // 2. إذا كان الملف PDF، نستخدم <object> (أقوى وأكثر استقراراً من iframe)
+    if (isPdf) {
+        viewerContainer.innerHTML += `
+            <object data="${url}" type="application/pdf" style="width: 85%; height: 90vh; margin: 2.5vh auto; display: block; border-radius: 12px; background: white; box-shadow: 0 0 30px rgba(0,0,0,0.5);">
+                <div style="text-align:center; padding-top:20%; color:white;">
+                    <h3>متصفحك لا يدعم العرض المباشر للـ PDF 😢</h3>
+                    <a href="${url}" target="_blank" style="color:#3498db; text-decoration:none; font-size:20px; font-weight:bold;">📥 اضغط هنا لفتح الملف أو تحميله</a>
+                </div>
+            </object>`;
+    } 
+    // 3. إذا كان صورة، نستخدم iframe أو img
+    else {
+        viewerContainer.innerHTML += `<iframe src="${url}" style="width: 85%; height: 90vh; margin: 2.5vh auto; display: block; border: none; border-radius: 12px; background: white; box-shadow: 0 0 30px rgba(0,0,0,0.5);"></iframe>`;
+    }
+
+    viewerContainer.style.display = 'block';
 }
 
-        function closeViewer() {
-            document.getElementById('documentViewer').style.display = 'none';
-            document.getElementById('viewerFrame').src = ''; 
-        }
+function closeViewer() {
+    const viewerContainer = document.getElementById('documentViewer');
+    viewerContainer.style.display = 'none';
+    viewerContainer.innerHTML = ''; // 🧹 تنظيف الذاكرة لعدم تداخل الملفات
+}
+        
 
         function openConfirm(nouveauStatut, btnElement) {
             pendingDecision = { statut: nouveauStatut, btn: btnElement };

@@ -9,6 +9,7 @@ cloudinary.config({
 });
 
 // 🚀 التعديل الذهبي: الاحتفاظ بصيغة الملف (PDF) لكي يقرأه المتصفح
+// 🚀 الهندسة الجديدة للرفع: إجبار السحابة على فتح الملف للعرض المباشر
 const uploadToCloudinary = (fileBuffer, originalName) => {
     return new Promise((resolve, reject) => {
         const isPdf = originalName.toLowerCase().endsWith('.pdf');
@@ -16,10 +17,9 @@ const uploadToCloudinary = (fileBuffer, originalName) => {
         const stream = cloudinary.uploader.upload_stream(
             { 
                 folder: "smart_city_permits", 
-                // 💡 نستخدم auto ليسمح المتصفح بعرضه داخل الموقع
-                resource_type: "auto", 
-                // 💡 نجبر السحابة على حفظه كملف PDF سليم قابل للقراءة
-                format: isPdf ? "pdf" : undefined 
+                // 💡 السر الأول: استخدام "image" حتى مع الـ PDF يجعل Cloudinary يعرضه مباشرة داخل المتصفحات
+                resource_type: "image", 
+                format: isPdf ? "pdf" : undefined
             },
             (error, result) => {
                 if (error) reject(error);
@@ -29,7 +29,6 @@ const uploadToCloudinary = (fileBuffer, originalName) => {
         stream.end(fileBuffer);
     });
 };
-
 const soumettreDemande = async (req, res) => {
     try {
         const { type_demande, nom_complet, cin, numero_whatsapp } = req.body;
