@@ -278,11 +278,15 @@
                     const docPath = demande[`document_${i}`];
                     if (docPath) {
                         hasDocs = true;
-                        let fixedPath = docPath.replace(/\\/g, '/');
-                        const cleanPath = fixedPath.startsWith('uploads') ? fixedPath : `uploads/${fixedPath}`;
-                        // تم التعديل: الرابط السحابي للوثائق
-                        const fileUrl = `https://smart-city-api-862628887937.europe-west1.run.app/${cleanPath}`;
-                        const isPdf = fixedPath.toLowerCase().endsWith('.pdf');
+                        
+                        // 🌟 التعديل السحابي
+                        let fileUrl = docPath; 
+                        if (!docPath.startsWith('http')) {
+                            const nomFichier = docPath.split('/').pop().split('\\').pop();
+                            fileUrl = `https://smart-city-api-862628887937.europe-west1.run.app/uploads/${nomFichier}`;
+                        }
+
+                        const isPdf = fileUrl.toLowerCase().includes('.pdf');
                         const icon = isPdf ? '📄' : '🖼️';
                         
                         docBox.innerHTML += `
@@ -290,22 +294,45 @@
                                 <div class="doc-icon" onclick="openViewer('${fileUrl}')" title="انقر للمعاينة">${icon}</div>
                                 <div style="font-weight: bold; font-size: 14px;">مرفق ${i}</div>
                                 <div class="doc-actions">
-                                    <button class="doc-btn" onclick="openViewer('${fileUrl}')">👁️ معاينة</button>
-                                    <a href="${fileUrl}" target="_blank" download class="doc-btn" style="background:#16a085;">📥 تحميل</a>
+                                    <button class="doc-btn" style="background:var(--dark);" onclick="openViewer('${fileUrl}')">👁️ معاينة</button>
+                                    <a href="${fileUrl}" target="_blank" download class="doc-btn" style="background:var(--primary);">📥 تحميل</a>
                                 </div>
                             </div>
                         `;
                     }
                 }
-
                 if (!hasDocs) { docBox.innerHTML = '<p class="empty-state">لا توجد وثائق</p>'; }
                 document.getElementById('modalTraitement').style.display = 'block';
             }
         }
 
         function fermerModal() { document.getElementById('modalTraitement').style.display = 'none'; }
-        function openViewer(url) { document.getElementById('viewerFrame').src = url; document.getElementById('documentViewer').style.display = 'block'; }
-        function closeViewer() { document.getElementById('documentViewer').style.display = 'none'; document.getElementById('viewerFrame').src = ''; }
+        // 🚀 الهندسة الجديدة للعرض: استخدام <object>
+        function openViewer(url) {
+            const viewerContainer = document.getElementById('documentViewer');
+            const isPdf = url.toLowerCase().includes('.pdf');
+
+            viewerContainer.innerHTML = '<span class="close-viewer" onclick="closeViewer()">&times;</span>';
+
+            if (isPdf) {
+                viewerContainer.innerHTML += `
+                    <object data="${url}" type="application/pdf" style="width: 85%; height: 90vh; margin: 2.5vh auto; display: block; border-radius: 12px; background: white;">
+                        <div style="text-align:center; padding-top:20%; color:white;">
+                            <h3>متصفحك لا يدعم العرض المباشر للـ PDF 😢</h3>
+                            <a href="${url}" target="_blank" style="color:#3498db; text-decoration:none; font-size:20px; font-weight:bold;">📥 اضغط هنا لفتح الملف أو تحميله</a>
+                        </div>
+                    </object>`;
+            } else {
+                viewerContainer.innerHTML += `<iframe src="${url}" style="width: 85%; height: 90vh; margin: 2.5vh auto; display: block; border: none; border-radius: 12px; background: white;"></iframe>`;
+            }
+            viewerContainer.style.display = 'block';
+        }
+
+        function closeViewer() {
+            const viewerContainer = document.getElementById('documentViewer');
+            viewerContainer.style.display = 'none';
+            viewerContainer.innerHTML = ''; 
+        }
 
         function openConfirm(btnElement) {
             btnApproveGlobal = btnElement;
@@ -326,11 +353,11 @@
         }
 
         // 🚀 إرسال القرار إلى الخادم (باستخدام FormData لدعم رفع الملفات)
+        // 🚀 إرسال القرار إلى الخادم (JSON لتجنب خطأ Multer)
         document.getElementById('btn-confirm-yes').onclick = async function() {
             closeConfirm(); 
             
             const code_suivi = document.getElementById('m-code-suivi').value;
-            const fileInput = document.getElementById('m-doc-licence');
             const demande = listeDemandes.find(d => d.code_suivi === code_suivi);
             
             const originalText = btnApproveGlobal.innerHTML;
@@ -338,20 +365,14 @@
             btnApproveGlobal.disabled = true;
 
             try {
-                // 🛠️ استخدام FormData بدلاً من JSON للتوافق مع uploadMiddleware
-                const formData = new FormData();
-                formData.append('code_suivi', code_suivi);
-                
-                // إذا اختار الموظف ملفاً، نقوم بإرفاقه بالاسم الذي يتوقعه الخادم
-                if (fileInput.files.length > 0) {
-                    formData.append('document_autorisation', fileInput.files[0]);
-                }
-
-                // 📡 تم التعديل: الاتصال بمسار التحديث السحابي
+                // 📡 إرسال JSON لتغيير الحالة فقط وتجنب أخطاء رفع الملفات الآن
                 const response = await fetch(`https://smart-city-api-862628887937.europe-west1.run.app/api/licence/delivrer`, {
                     method: 'PUT',
-                    headers: { 'Authorization': 'Bearer ' + token }, // لا نضيف Content-Type مع FormData
-                    body: formData // إرسال الطرد الذي يحتوي على الملف والبيانات
+                    headers: { 
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify({ code_suivi: code_suivi })
                 });
 
                 if(response.ok) {
