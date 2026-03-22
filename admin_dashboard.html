@@ -419,7 +419,7 @@
                     const date = new Date(d.date_creation).toLocaleDateString('ar-MA');
                     const cin = d.cin ? d.cin : '<span style="color:#64748b;font-size:11px;">غير مسجل</span>'; // حماية في حال عدم وجود CIN في بعض الملفات القديمة
                     
-                    tbody.innerHTML += `
+                   tbody.innerHTML += `
                         <tr>
                             <td style="font-weight: bold; color: #94a3b8;">${index + 1}</td>
                             <td><strong style="color:var(--accent);">${d.code_suivi}</strong></td>
@@ -500,8 +500,30 @@
             if (data && data.utilisateurs.length > 0) {
                 data.utilisateurs.forEach(u => {
                     const roleBadge = u.role === 'admin' ? `<span class="badge bg-danger">👑 مدير عام</span>` : `<span class="badge bg-urb">💼 ${u.role}</span>`;
-                    tbody.innerHTML += `<tr><td><strong>${u.nom_complet}</strong></td><td dir="ltr" style="text-align:right;">${u.email}</td><td>${roleBadge}</td></tr>`;
+                    // إضافة زر الحذف إذا لم يكن مديراً
+                    const deleteBtn = u.role !== 'admin' 
+                        ? `<button onclick="supprimerEmploye(${u.id}, '${u.nom_complet}')" style="background:transparent; border:none; color:var(--danger); cursor:pointer;" title="حذف الموظف">🗑️</button>` 
+                        : '';
+                        
+                    tbody.innerHTML += `<tr><td><strong>${u.nom_complet}</strong></td><td dir="ltr" style="text-align:right;">${u.email}</td><td>${roleBadge} ${deleteBtn}</td></tr>`;
                 });
+            }
+        }
+
+        // 🚀 دالة حذف الموظف
+        async function supprimerEmploye(id, nom) {
+            if(confirm(`هل أنت متأكد من سحب الصلاحيات وحذف الموظف: ${nom}؟`)) {
+                try {
+                    const response = await fetch(`https://smart-city-api-862628887937.europe-west1.run.app/api/admin/utilisateurs/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    });
+                    const data = await response.json();
+                    if(response.ok) {
+                        showToast('تم حذف الموظف بنجاح 🗑️');
+                        fetchUsers(); // تحديث الجدول
+                    } else { showToast(data.message, true); }
+                } catch(e) { showToast('خطأ في الاتصال بالخادم', true); }
             }
         }
 

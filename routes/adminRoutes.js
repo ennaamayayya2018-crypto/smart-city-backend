@@ -17,6 +17,6 @@ router.get('/utilisateurs', adminController.getAllUsers);
 router.get('/historique', adminController.getAuditTrail);
 router.get('/charts', adminController.getChartData);// مسار كشف الاختناقات والملفات المتأخرة
 router.get('/retards', adminController.getFichiersEnRetard);
-router.get('/retards', adminController.getFichiersEnRetard);
 router.get('/archive', adminController.getArchiveDefinitif);
+router.delete('/utilisateurs/:id', adminController.supprimerUtilisateur);
 module.exports = router;
