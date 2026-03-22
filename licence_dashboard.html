@@ -354,29 +354,35 @@
 
         // 🚀 إرسال القرار إلى الخادم (باستخدام FormData لدعم رفع الملفات)
         // 🚀 إرسال القرار إلى الخادم (JSON لتجنب خطأ Multer)
+       // 🚀 إرسال القرار إلى الخادم (مع الملف الاختياري)
         document.getElementById('btn-confirm-yes').onclick = async function() {
             closeConfirm(); 
             
             const code_suivi = document.getElementById('m-code-suivi').value;
+            const fileInput = document.getElementById('m-doc-licence');
             const demande = listeDemandes.find(d => d.code_suivi === code_suivi);
             
             const originalText = btnApproveGlobal.innerHTML;
-            btnApproveGlobal.innerHTML = '⏳ جاري الإصدار...';
+            btnApproveGlobal.innerHTML = '⏳ جاري الإصدار والرفع السحابي...';
             btnApproveGlobal.disabled = true;
 
             try {
-                // 📡 إرسال JSON لتغيير الحالة فقط وتجنب أخطاء رفع الملفات الآن
+                // استخدام FormData لإرسال الملفات والبيانات معاً
+                const formData = new FormData();
+                formData.append('code_suivi', code_suivi);
+                
+                if (fileInput.files.length > 0) {
+                    formData.append('document_autorisation', fileInput.files[0]);
+                }
+
                 const response = await fetch(`https://smart-city-api-862628887937.europe-west1.run.app/api/licence/delivrer`, {
                     method: 'PUT',
-                    headers: { 
-                        'Authorization': 'Bearer ' + token,
-                        'Content-Type': 'application/json' 
-                    },
-                    body: JSON.stringify({ code_suivi: code_suivi })
+                    headers: { 'Authorization': 'Bearer ' + token }, // لا تضعي Content-Type مع FormData
+                    body: formData
                 });
 
                 if(response.ok) {
-                    showToast('تم إصدار الرخصة بنجاح! 🏆');
+                    showToast('تم إصدار الرخصة وأرشفتها بنجاح! 🏆');
                     
                     // 🟢 تفعيل الواتساب لتبشير المواطن
                     setTimeout(() => {
