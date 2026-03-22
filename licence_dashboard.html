@@ -344,12 +344,16 @@
         }
 
         // 📱 محرك الواتساب: رسالة التهنئة النهائية
+        // 📱 محرك الواتساب: رسالة التهنئة النهائية (النسخة الرسمية المستقرة)
         function genererLienWhatsApp(nom, cin, type, whatsapp) {
             let numStr = String(whatsapp).trim();
             if (numStr.startsWith('0')) numStr = '212' + numStr.substring(1);
 
-            const message = `تهانينا السيد(ة) *${nom}*، صاحب البطاقة الوطنية *${cin}*.\n\nنعلمكم أن طلبكم المتعلق بـ ( *${type}* ) قد تمت دراسته والموافقة عليه بصفة نهائية ✅.\n\nالمرجو التفضل لمصلحة الرخص  المكتب الاقتصادي لاستلام رخصتكم  .\.`;
-            return `https://wa.me/${numStr}?text=${encodeURIComponent(message)}`;
+            // تنظيف النص وإزالة أي رموز غريبة في النهاية
+            const message = `تهانينا السيد(ة) *${nom}*، صاحب البطاقة الوطنية *${cin}*.\n\nنعلمكم أن طلبكم المتعلق بـ ( *${type}* ) قد تمت دراسته والموافقة عليه بصفة نهائية ✅.\n\nالمرجو التفضل لمصلحة الرخص لاستلام رخصتكم.`;
+            
+            // استخدام رابط الـ API الرسمي بدلاً من الرابط القصير لتجنب خطأ 404
+            return `https://api.whatsapp.com/send?phone=${numStr}&text=${encodeURIComponent(message)}`;
         }
 
         // 🚀 إرسال القرار إلى الخادم (باستخدام FormData لدعم رفع الملفات)
