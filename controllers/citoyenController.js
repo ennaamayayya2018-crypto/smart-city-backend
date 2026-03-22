@@ -62,6 +62,13 @@ const soumettreDemande = async (req, res) => {
         const values = [code_suivi, type_demande, nom_complet, cin, numero_whatsapp, ...urls];
         const result = await db.query(query, values);
 
+
+         // 🚀 التعديل السحري 1: إطلاق رادار Socket.io لتحديث اللوحة فوراً بدون Refresh
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('alerte_eco', { message: `ملف جديد من المواطن: ${nom_complet} (${type_demande})` });
+        }
+
         res.status(201).json({
             message: 'تم تسجيل طلبك بنجاح في السحابة الدائمة!',
             code_suivi: result.rows[0].code_suivi

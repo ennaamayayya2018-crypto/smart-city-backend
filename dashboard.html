@@ -359,33 +359,39 @@
                 }
 
                 // 🧠 الذكاء الإداري المحدث مع تعديل نصوص الأزرار
-                const btnUrb = document.getElementById('btn-urb');
-                const btnLic = document.getElementById('btn-lic');
-                const btnRejText = document.querySelector('.btn-reject span');
+              // 🧠 الذكاء الإداري المحدث (تصحيح مسار العمود الإشهاري والهمزات)
+        const btnUrb = document.getElementById('btn-urb');
+        const btnLic = document.getElementById('btn-lic');
+        const btnRejText = document.querySelector('.btn-reject span');
+        
+        // تعريف قائمة مسارات التعمير بدقة مطابقة لواجهة المواطن
+        const typesUrbanisme = ['رصيف مغطى', 'رصيف غير مغطى', 'عمود إشهاري'];
 
-                if (demande.statut === 'retour_urb_favorable') {
-                    btnUrb.style.display = 'none';   
-                    btnLic.style.display = 'flex';  
-                    btnRejText.innerText = '❌ رفض (نقص الوثائق)';
-                } else if (demande.statut === 'retour_urb_defavorable') {
-                    btnUrb.style.display = 'none';   
-                    btnLic.style.display = 'none';   
-                    // تغيير نص الزر ليتناسب مع حالة الرفض النهائي
-                    btnRejText.innerText = '❌ تأكيد الرفض التقني وإشعار المواطن';
-                } else {
-                    btnRejText.innerText = '❌ رفض (نقص الوثائق)';
-                    if (demande.type_demande.includes('رصيف') || demande.type_demande.includes('عمود اشهاري')) {
-                        btnUrb.style.display = 'flex';  
-                        btnLic.style.display = 'none';
-                    } else {
-                        btnUrb.style.display = 'none';
-                        btnLic.style.display = 'flex';  
-                    }
-                }
-
-                document.getElementById('modalTraitement').style.display = 'block';
+        if (demande.statut === 'retour_urb_favorable') {
+            btnUrb.style.display = 'none';   
+            btnLic.style.display = 'flex';  
+            btnRejText.innerText = '❌ رفض (نقص الوثائق)';
+        } else if (demande.statut === 'retour_urb_defavorable') {
+            btnUrb.style.display = 'none';   
+            btnLic.style.display = 'none';   
+            btnRejText.innerText = '❌ تأكيد الرفض التقني وإشعار المواطن';
+        } else {
+            btnRejText.innerText = '❌ رفض (نقص الوثائق)';
+            
+            // ✅ المسار الصحيح 100% المعتمد على المصفوفة
+            if (typesUrbanisme.includes(demande.type_demande)) {
+                btnUrb.style.display = 'flex';  
+                btnLic.style.display = 'none';
+            } else { 
+                // الحالات الأخرى (مثل لوحة إشهارية) تذهب للرخص
+                btnUrb.style.display = 'none';
+                btnLic.style.display = 'flex';  
             }
         }
+
+        document.getElementById('modalTraitement').style.display = 'block';
+    }
+}
 
         function fermerModal() { document.getElementById('modalTraitement').style.display = 'none'; }
 
@@ -434,14 +440,18 @@ function closeViewer() {
         }
 
         // 📱 دالة إنشاء رابط الواتساب حسب الدستور
+        // 📱 دالة الواتساب (نسخة محصنة ضد المسافات المخفية وانهيار الروابط)
         function genererLienWhatsApp(nom, cin, type, whatsapp, observations) {
-            if (!observations) observations = "عدم استيفاء الشروط القانونية أو التقنية المطلوبة.";
+            // تنظيف الملاحظات من أي فراغات، وإذا كانت فارغة نضع النص الافتراضي
+            const obsFinale = (observations && observations.trim() !== "") 
+                ? observations.trim() 
+                : "عدم استيفاء الشروط القانونية أو التقنية المطلوبة.";
             
-            // تحويل الرقم المغربي (06...) إلى الصيغة الدولية (2126...)
             let numStr = String(whatsapp).trim();
             if (numStr.startsWith('0')) numStr = '212' + numStr.substring(1);
 
-            const message = `مرحباً *${nom}*، صاحب البطاقة الوطنية رقم *${cin}*.\n\nبخصوص طلبكم المتعلق بـ ( *${type}* )، نأسف لإخباركم بأنه تم رفض الطلب للأسباب التالية:\n\n🛑 ${observations}\n\nلمزيد من الاستفسارات، المرجو مراجعة مصلحة الرخص او الاتصال على الرقم 0528996725.`;
+            const message = `مرحباً السيد(ة) *${nom}*، صاحب البطاقة الوطنية رقم *${cin}*.\n\nبخصوص طلبكم المتعلق بـ ( *${type}* )، نأسف لإخباركم بأنه تم رفض الطلب للأسباب التالية:\n\n🛑 ${obsFinale}\n\nلمزيد من الاستفسارات، المرجو مراجعة مصلحة الرخص أو الاتصال على الرقم 0528996725.`;
+            
             return `https://wa.me/${numStr}?text=${encodeURIComponent(message)}`;
         }
 
