@@ -257,6 +257,37 @@
 
     </div>
 
+    <div id="modalArchive" class="modal" style="z-index: 10005;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="margin: 0; color: var(--accent);">👁️ تفاصيل الملف والأرشيف</h3>
+                <span class="close-btn" onclick="document.getElementById('modalArchive').style.display='none'">&times;</span>
+            </div>
+            <div class="modal-body" id="print-section">
+                <div class="modal-info">
+                    <div class="details-box" style="background:var(--bg); border-color:#334155; color:white;">
+                        <p><strong>رقم التتبع:</strong> <span id="a-code" style="color:var(--accent);"></span></p>
+                        <p><strong>الاسم الكامل:</strong> <span id="a-nom"></span></p>
+                        <p><strong>رقم البطاقة (CIN):</strong> <span id="a-cin"></span></p>
+                        <p><strong>نوع الطلب:</strong> <span id="a-type" class="badge bg-urb"></span></p>
+                        <p><strong>تاريخ الإيداع:</strong> <span id="a-date"></span></p>
+                        <p><strong>القرار النهائي:</strong> <span id="a-statut"></span></p>
+                    </div>
+                    <label style="color: #94a3b8; font-weight: bold;">مسار الملاحظات والقرارات:</label>
+                    <div id="a-obs" style="background:#0f172a; padding:15px; border-radius:8px; margin-top:10px; color:#cbd5e1; white-space: pre-wrap; border:1px solid #334155;"></div>
+                </div>
+                <div class="modal-docs">
+                    <h4 style="margin-top: 0; border-bottom: 1px solid #334155; padding-bottom: 10px; color:white;">📄 المرفقات والوثائق</h4>
+                    <div id="a-documents" class="doc-grid"></div>
+                </div>
+            </div>
+            <div style="padding: 15px 30px; background: var(--card-bg); border-top: 1px solid #334155; display: flex; justify-content: flex-end;">
+                <button onclick="window.print()" class="btn-export-pdf" style="background:var(--accent);">🖨️ طباعة ملخص الملف</button>
+            </div>
+        </div>
+    </div>
+
+
     <script>
         const token = localStorage.getItem('token');
         const role = localStorage.getItem('userRole');
@@ -354,16 +385,21 @@
 
                     // لون أحمر قوي للأيام المتأخرة جداً
                     let joursColor = d.jours_retard >= 7 ? 'color: #ef4444; font-weight: 900;' : 'color: #f59e0b; font-weight: bold;';
-
-                    tbody.innerHTML += `
+                   tbody.innerHTML += `
                         <tr>
+                            <td style="font-weight: bold; color: #94a3b8;">${index + 1}</td>
                             <td><strong style="color:var(--accent);">${d.code_suivi}</strong></td>
                             <td>${d.nom_complet}</td>
+                            <td>${cin}</td>
                             <td>${d.type_demande}</td>
-                            <td style="${joursColor}">${d.jours_retard} أيام متأخرة ⏱️</td>
-                            <td>${emplacement}</td>
+                            <td>${date}</td>
+                            <td>
+                                ${badge}
+                                <button onclick="ouvrirModalArchive('${d.code_suivi}')" style="background:transparent; border:none; font-size:18px; cursor:pointer; margin-right:10px;" title="التفاصيل والطباعة">👁️</button>
+                            </td>
                         </tr>
                     `;
+                   
                 });
             } else { 
                 badge.innerText = "0";
@@ -435,6 +471,47 @@
                 tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:40px; color: #94a3b8;">لا توجد ملفات مطابقة في الأرشيف 📭</td></tr>`; 
             }
         }
+            // 👁️ دالة فتح تفاصيل الملف في الأرشيف
+        function ouvrirModalArchive(code_suivi) {
+            const demande = archiveGlobal.find(d => d.code_suivi === code_suivi);
+            if(!demande) return;
+
+            document.getElementById('a-code').innerText = demande.code_suivi;
+            document.getElementById('a-nom').innerText = demande.nom_complet;
+            document.getElementById('a-cin').innerText = demande.cin || 'غير مسجل';
+            document.getElementById('a-type').innerText = demande.type_demande;
+            document.getElementById('a-date').innerText = new Date(demande.date_creation).toLocaleDateString('ar-MA');
+            document.getElementById('a-statut').innerHTML = demande.statut === 'autorise' ? '<span class="badge bg-success">مرخص نهائياً ✅</span>' : '<span class="badge bg-danger">مرفوض نهائياً ❌</span>';
+            document.getElementById('a-obs').innerText = demande.observations || 'لا توجد تفاصيل إضافية مسجلة.';
+
+            const docBox = document.getElementById('a-documents');
+            docBox.innerHTML = '';
+            let hasDocs = false;
+
+            const docsToCheck = ['document_1', 'document_2', 'document_3', 'document_4', 'document_autorisation'];
+            docsToCheck.forEach((docKey, index) => {
+                const docPath = demande[docKey];
+                if (docPath) {
+                    hasDocs = true;
+                    let fileUrl = docPath.startsWith('http') ? docPath : `https://smart-city-api-862628887937.europe-west1.run.app/uploads/${docPath.replace(/\\/g, '/').split('/').pop()}`;
+                    const isPdf = fileUrl.toLowerCase().includes('.pdf');
+                    const icon = isPdf ? '📄' : '🖼️';
+                    const title = docKey === 'document_autorisation' ? 'الرخصة الموقعة 🏆' : `مرفق ${index + 1}`;
+
+                    docBox.innerHTML += `
+                        <div class="doc-card" style="background:var(--bg); border-color:#334155;">
+                            <div style="font-size:30px; cursor:pointer;" onclick="window.open('${fileUrl}', '_blank')">${icon}</div>
+                            <div style="font-size:12px; margin:10px 0; color:#cbd5e1;">${title}</div>
+                            <a href="${fileUrl}" target="_blank" download style="background:var(--accent); color:white; padding:5px 10px; border-radius:5px; text-decoration:none; font-size:11px;">📥 عرض/تحميل</a>
+                        </div>
+                    `;
+                }
+            });
+
+            if(!hasDocs) docBox.innerHTML = '<p style="color:#94a3b8; text-align:center;">لا توجد وثائق في الأرشيف</p>';
+            document.getElementById('modalArchive').style.display = 'block';
+        }
+
 
         // 🗄️ 3. التفاعل مع أزرار الفلترة (أخضر / أحمر)
         function filtrerParStatut(statut, btnElement) {
@@ -511,6 +588,7 @@
         }
 
         // 🚀 دالة حذف الموظف
+        // 🚀 دالة حذف الموظف (النسخة المحصنة)
         async function supprimerEmploye(id, nom) {
             if(confirm(`هل أنت متأكد من سحب الصلاحيات وحذف الموظف: ${nom}؟`)) {
                 try {
@@ -518,15 +596,22 @@
                         method: 'DELETE',
                         headers: { 'Authorization': 'Bearer ' + token }
                     });
+                    
+                    // التحقق من الاستجابة قبل تحويلها لـ JSON
+                    if (!response.ok) {
+                        if(response.status === 404) throw new Error("المسار غير موجود في السيرفر! تأكد من رفع adminRoutes.js");
+                        throw new Error("فشل الحذف من الخادم");
+                    }
+                    
                     const data = await response.json();
-                    if(response.ok) {
-                        showToast('تم حذف الموظف بنجاح 🗑️');
-                        fetchUsers(); // تحديث الجدول
-                    } else { showToast(data.message, true); }
-                } catch(e) { showToast('خطأ في الاتصال بالخادم', true); }
+                    showToast('تم حذف الموظف بنجاح 🗑️');
+                    fetchUsers(); 
+                } catch(e) { 
+                    showToast(e.message || 'خطأ في الاتصال بالخادم', true); 
+                    console.error(e);
+                }
             }
         }
-
         async function fetchAudit() {
             const data = await fetchAdminData('historique');
             const tbody = document.getElementById('tbody-audit');
