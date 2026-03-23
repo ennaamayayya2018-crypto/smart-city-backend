@@ -257,32 +257,15 @@
 
     </div>
 
-    <div id="modalArchive" class="modal" style="z-index: 10005;">
-        <div class="modal-content">
+   <div id="modalDocs" class="modal" style="z-index: 10005;">
+        <div class="modal-content" style="width: 70%; max-width: 800px; height: auto; max-height: 80vh;">
             <div class="modal-header">
-                <h3 style="margin: 0; color: var(--accent);">👁️ تفاصيل الملف والأرشيف</h3>
-                <span class="close-btn" onclick="document.getElementById('modalArchive').style.display='none'">&times;</span>
+                <h3 style="margin: 0; color: var(--accent);">👁️ الوثائق المرفقة والرخصة النهائية</h3>
+                <span class="close-btn" onclick="document.getElementById('modalDocs').style.display='none'">&times;</span>
             </div>
-            <div class="modal-body" id="print-section">
-                <div class="modal-info">
-                    <div class="details-box" style="background:var(--bg); border-color:#334155; color:white;">
-                        <p><strong>رقم التتبع:</strong> <span id="a-code" style="color:var(--accent);"></span></p>
-                        <p><strong>الاسم الكامل:</strong> <span id="a-nom"></span></p>
-                        <p><strong>رقم البطاقة (CIN):</strong> <span id="a-cin"></span></p>
-                        <p><strong>نوع الطلب:</strong> <span id="a-type" class="badge bg-urb"></span></p>
-                        <p><strong>تاريخ الإيداع:</strong> <span id="a-date"></span></p>
-                        <p><strong>القرار النهائي:</strong> <span id="a-statut"></span></p>
+            <div class="modal-body" style="padding: 30px; overflow-y: auto; background: var(--bg);">
+                <div id="docs-container" class="doc-grid" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px;">
                     </div>
-                    <label style="color: #94a3b8; font-weight: bold;">مسار الملاحظات والقرارات:</label>
-                    <div id="a-obs" style="background:#0f172a; padding:15px; border-radius:8px; margin-top:10px; color:#cbd5e1; white-space: pre-wrap; border:1px solid #334155;"></div>
-                </div>
-                <div class="modal-docs">
-                    <h4 style="margin-top: 0; border-bottom: 1px solid #334155; padding-bottom: 10px; color:white;">📄 المرفقات والوثائق</h4>
-                    <div id="a-documents" class="doc-grid"></div>
-                </div>
-            </div>
-            <div style="padding: 15px 30px; background: var(--card-bg); border-top: 1px solid #334155; display: flex; justify-content: flex-end;">
-                <button onclick="window.print()" class="btn-export-pdf" style="background:var(--accent);">🖨️ طباعة ملخص الملف</button>
             </div>
         </div>
     </div>
@@ -455,7 +438,7 @@
                     const date = new Date(d.date_creation).toLocaleDateString('ar-MA');
                     const cin = d.cin ? d.cin : '<span style="color:#64748b;font-size:11px;">غير مسجل</span>'; // حماية في حال عدم وجود CIN في بعض الملفات القديمة
                     
-                   tbody.innerHTML += `
+                  tbody.innerHTML += `
                         <tr>
                             <td style="font-weight: bold; color: #94a3b8;">${index + 1}</td>
                             <td><strong style="color:var(--accent);">${d.code_suivi}</strong></td>
@@ -463,7 +446,10 @@
                             <td>${cin}</td>
                             <td>${d.type_demande}</td>
                             <td>${date}</td>
-                            <td>${badge}</td>
+                            <td>
+                                ${badge}
+                                <button onclick="ouvrirModalDocs('${d.code_suivi}')" style="background:transparent; border:none; font-size:16px; cursor:pointer; margin-right:10px; vertical-align: middle; transition: 0.2s;" title="عرض الوثائق والرخصة" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'">👁️</button>
+                            </td>
                         </tr>
                     `;
                 });
@@ -472,44 +458,49 @@
             }
         }
             // 👁️ دالة فتح تفاصيل الملف في الأرشيف
-        function ouvrirModalArchive(code_suivi) {
+        // 👁️ دالة فتح نافذة الوثائق والرخصة فقط
+        function ouvrirModalDocs(code_suivi) {
             const demande = archiveGlobal.find(d => d.code_suivi === code_suivi);
             if(!demande) return;
 
-            document.getElementById('a-code').innerText = demande.code_suivi;
-            document.getElementById('a-nom').innerText = demande.nom_complet;
-            document.getElementById('a-cin').innerText = demande.cin || 'غير مسجل';
-            document.getElementById('a-type').innerText = demande.type_demande;
-            document.getElementById('a-date').innerText = new Date(demande.date_creation).toLocaleDateString('ar-MA');
-            document.getElementById('a-statut').innerHTML = demande.statut === 'autorise' ? '<span class="badge bg-success">مرخص نهائياً ✅</span>' : '<span class="badge bg-danger">مرفوض نهائياً ❌</span>';
-            document.getElementById('a-obs').innerText = demande.observations || 'لا توجد تفاصيل إضافية مسجلة.';
-
-            const docBox = document.getElementById('a-documents');
-            docBox.innerHTML = '';
+            const container = document.getElementById('docs-container');
+            container.innerHTML = '';
             let hasDocs = false;
 
-            const docsToCheck = ['document_1', 'document_2', 'document_3', 'document_4', 'document_autorisation'];
-            docsToCheck.forEach((docKey, index) => {
-                const docPath = demande[docKey];
-                if (docPath) {
+            // قائمة الوثائق للبحث عنها في الملف
+            const docsList = [
+                { key: 'document_1', name: 'البطاقة الوطنية' },
+                { key: 'document_2', name: 'التصميم / المرفق 2' },
+                { key: 'document_3', name: 'مرفق إضافي 3' },
+                { key: 'document_4', name: 'مرفق إضافي 4' },
+                { key: 'document_autorisation', name: 'الرخصة الموقعة 🏆', isLicence: true }
+            ];
+
+            docsList.forEach(doc => {
+                const path = demande[doc.key];
+                if (path) {
                     hasDocs = true;
-                    let fileUrl = docPath.startsWith('http') ? docPath : `https://smart-city-api-862628887937.europe-west1.run.app/uploads/${docPath.replace(/\\/g, '/').split('/').pop()}`;
+                    // معالجة الرابط (محلي قديم أو سحابي جديد)
+                    let fileUrl = path.startsWith('http') ? path : `https://smart-city-api-862628887937.europe-west1.run.app/uploads/${path.replace(/\\/g, '/').split('/').pop()}`;
                     const isPdf = fileUrl.toLowerCase().includes('.pdf');
                     const icon = isPdf ? '📄' : '🖼️';
-                    const title = docKey === 'document_autorisation' ? 'الرخصة الموقعة 🏆' : `مرفق ${index + 1}`;
+                    const btnStyle = doc.isLicence ? 'background: var(--success);' : 'background: var(--accent);';
 
-                    docBox.innerHTML += `
-                        <div class="doc-card" style="background:var(--bg); border-color:#334155;">
-                            <div style="font-size:30px; cursor:pointer;" onclick="window.open('${fileUrl}', '_blank')">${icon}</div>
-                            <div style="font-size:12px; margin:10px 0; color:#cbd5e1;">${title}</div>
-                            <a href="${fileUrl}" target="_blank" download style="background:var(--accent); color:white; padding:5px 10px; border-radius:5px; text-decoration:none; font-size:11px;">📥 عرض/تحميل</a>
+                    container.innerHTML += `
+                        <div class="doc-card" style="background: var(--card-bg); border: 1px solid #334155; border-radius: 12px; padding: 20px; text-align: center; transition: 0.3s;" onmouseover="this.style.borderColor='var(--accent)';" onmouseout="this.style.borderColor='#334155';">
+                            <div style="font-size: 40px; margin-bottom: 15px; cursor: pointer;" onclick="window.open('${fileUrl}', '_blank')">${icon}</div>
+                            <div style="font-size: 13px; color: #cbd5e1; margin-bottom: 15px; font-weight: bold;">${doc.name}</div>
+                            <a href="${fileUrl}" target="_blank" style="${btnStyle} color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: bold; display: inline-block;">👁️ عرض الملف</a>
                         </div>
                     `;
                 }
             });
 
-            if(!hasDocs) docBox.innerHTML = '<p style="color:#94a3b8; text-align:center;">لا توجد وثائق في الأرشيف</p>';
-            document.getElementById('modalArchive').style.display = 'block';
+            if(!hasDocs) {
+                container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #94a3b8; padding: 40px; font-size: 16px;">لا توجد أي وثائق أو رخص مرفقة بهذا الملف 📭</div>';
+            }
+
+            document.getElementById('modalDocs').style.display = 'block';
         }
 
 
