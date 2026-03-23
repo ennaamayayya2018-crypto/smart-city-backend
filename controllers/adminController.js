@@ -50,21 +50,22 @@ const getAllUsers = async (req, res) => {
 // ==========================================
 // 4. جلب الصندوق الأسود (سجل الحركات من historique_actions)
 // ==========================================
+// ==========================================
+// 4. جلب الصندوق الأسود (سجل الحركات من historique_actions)
+// ==========================================
 const getAuditTrail = async (req, res) => {
     try {
-        // نربط الجداول (JOIN) لنجلب اسم الموظف ورقم تتبع الملف
+        // جلب البيانات مباشرة لأن الجدول يحتوي على الأسماء والأرقام مسبقاً
         const query = `
-            SELECT h.id, h.action_prise, h.remarques, h.date_action, 
-                   u.nom_complet as nom_employe, d.code_suivi
-            FROM historique_actions h
-            LEFT JOIN utilisateurs u ON h.utilisateur_id = u.id
-            LEFT JOIN demandes d ON h.demande_id = d.id
-            ORDER BY h.date_action DESC
+            SELECT id, action_prise, remarques, date_action, nom_employe, code_suivi
+            FROM historique_actions
+            ORDER BY date_action DESC
             LIMIT 100;
         `;
         const result = await db.query(query);
         res.status(200).json({ historique: result.rows });
     } catch (error) {
+        console.error('Error fetching audit:', error);
         res.status(500).json({ message: 'حدث خطأ أثناء جلب سجل الحركات.' });
     }
 };
