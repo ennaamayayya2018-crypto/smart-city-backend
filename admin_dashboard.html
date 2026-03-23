@@ -93,24 +93,19 @@
         .btn-dl { background: var(--secondary); color: white; }
         .btn-dl:hover { background: #475569; }
 
-        /* 🌟 تصميم نافذة الملف الموحدة (الخلفية والتمركز) */
-        .modal { display: none; position: fixed; z-index: 10005; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); }
-        .modal-content { background-color: var(--card-bg); margin: 5% auto; border-radius: 16px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; animation: zoomIn 0.3s ease-out; border: 1px solid #334155; color: var(--text); }
-        @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .modal-header { padding: 20px 30px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; background: #0f172a; }
-        .close-btn { color: #94a3b8; font-size: 32px; cursor: pointer; transition: 0.2s; font-weight: bold; line-height: 1; padding-bottom: 5px; }
-        .close-btn:hover { color: var(--danger); transform: scale(1.1); }
+        /* 🎬 تصميم العارض المتسلسل (Carousel Viewer) */
+        .viewer-container { position: relative; width: 100%; height: 65vh; background: #0f172a; border-radius: 12px; border: 1px solid #334155; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        .viewer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 10px; }
+        .doc-current-title { color: var(--accent); font-weight: bold; font-size: 16px; margin: 0; }
+        .btn-mini-dl { background: var(--success); color: white; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; text-decoration: none; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-mini-dl:hover { background: #059669; transform: translateY(-2px); }
         
-        /* 🌟 زر المجلد الأنيق في الجدول */
-        .btn-folder { background: rgba(59, 130, 246, 0.1); border: 1px solid var(--accent); color: var(--accent); padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; white-space: nowrap; }
-        .btn-folder:hover { background: var(--accent); color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); }
-        
-        /* 🌟 أزرار الوثائق داخل النافذة */
-        .btn-doc-action { padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; text-decoration: none; cursor: pointer; transition: 0.2s; border: none; flex: 1; text-align: center; display: inline-block; }
-        .btn-view { background: var(--accent); color: white; }
-        .btn-view:hover { background: #2563eb; }
-        .btn-dl { background: var(--secondary); color: white; }
-        .btn-dl:hover { background: #475569; }
+        /* ⬅️ ➡️ أسهم التنقل */
+        .nav-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(15, 23, 42, 0.7); color: white; border: 2px solid #334155; width: 45px; height: 45px; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.3s; z-index: 10; backdrop-filter: blur(4px); }
+        .nav-arrow:hover { background: var(--accent); border-color: var(--accent); scale: 1.1; }
+        .nav-arrow:disabled { opacity: 0.3; cursor: not-allowed; background: rgba(15, 23, 42, 0.5); border-color: transparent; }
+        .arrow-right { right: 15px; } /* في العربية اليمين هو السابق */
+        .arrow-left { left: 15px; }  /* في العربية اليسار هو التالي */
     </style>
 </head>
 <body>
@@ -288,23 +283,37 @@
     </div>
 
    <div id="modalDossier" class="modal" style="z-index: 10005;">
-        <div class="modal-content" style="width: 75%; max-width: 900px; height: auto; max-height: 85vh;">
+        <div class="modal-content" style="width: 80%; max-width: 1000px; height: auto; max-height: 90vh;">
             <div class="modal-header">
-                <h3 style="margin: 0; color: var(--accent);">📂 محتويات الملف: <span id="md-code" style="color: white;"></span></h3>
+                <h3 style="margin: 0; color: var(--accent);">📂 تصفح الملف: <span id="md-code" style="color: white;"></span></h3>
                 <span class="close-btn" onclick="document.getElementById('modalDossier').style.display='none'">&times;</span>
             </div>
             
-            <div class="modal-body" style="padding: 25px; overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; gap: 20px;">
+            <div class="modal-body" style="padding: 20px; overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; gap: 15px;">
                 
                 <div id="md-obs-box" style="background: rgba(239,68,68,0.1); border-right: 4px solid var(--danger); padding: 15px 20px; border-radius: 8px; display: none;">
-                    <h4 id="md-obs-title" style="margin: 0 0 10px 0; color: var(--danger);">🛑 سبب الرفض / الملاحظات:</h4>
+                    <h4 style="margin: 0 0 10px 0; color: var(--danger);">🛑 سبب الرفض / الملاحظات:</h4>
                     <p id="md-obs-text" style="margin: 0; color: #cbd5e1; font-size: 14px; line-height: 1.6; white-space: pre-wrap;"></p>
                 </div>
 
-                <div>
-                    <h4 style="margin: 0 0 15px 0; color: #94a3b8; border-bottom: 1px solid #334155; padding-bottom: 10px;">الوثائق والرخص المرفقة:</h4>
-                    <div id="md-docs-container" class="doc-grid" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px;">
-                        </div>
+                <div id="viewer-wrapper" style="display: none;">
+                    <div class="viewer-header">
+                        <h4 class="doc-current-title" id="vd-title">جاري التحميل...</h4>
+                        <span style="color: #64748b; font-size: 12px; font-weight: bold;" id="vd-counter">1 / 1</span>
+                        <a href="#" target="_blank" download class="btn-mini-dl" id="vd-download">📥 تحميل الوثيقة</a>
+                    </div>
+                    
+                    <div class="viewer-container">
+                        <button class="nav-arrow arrow-right" id="btn-prev" onclick="changerDocument(-1)" title="الوثيقة السابقة">&#10095;</button>
+                        
+                        <div id="vd-content" style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;"></div>
+                        
+                        <button class="nav-arrow arrow-left" id="btn-next" onclick="changerDocument(1)" title="الوثيقة التالية">&#10094;</button>
+                    </div>
+                </div>
+                
+                <div id="no-docs-msg" style="display: none; text-align: center; color: #94a3b8; padding: 40px; font-size: 18px;">
+                    لا توجد أي وثائق أو رخص مرفقة بهذا الملف 📭
                 </div>
 
             </div>
@@ -502,77 +511,94 @@
         }
 
         // 📂 دالة فتح المجلد الموحد (الملاحظات + الوثائق)
+        // متغيرات للتحكم في العارض المتسلسل
+        let listeDocumentsActuels = [];
+        let indexDocumentActuel = 0;
+
+        // 📂 دالة فتح المجلد الموحد
         function ouvrirDossier(code_suivi) {
             const demande = archiveGlobal.find(d => d.code_suivi === code_suivi);
             if(!demande) return;
 
-            // 1. تعيين العنوان
             document.getElementById('md-code').innerText = demande.code_suivi;
 
-            // 2. معالجة حقل الملاحظات
+            // 1. معالجة حقل الملاحظات (يظهر فقط للرفض)
             const obsBox = document.getElementById('md-obs-box');
-            const obsTitle = document.getElementById('md-obs-title');
             const obsText = document.getElementById('md-obs-text');
-
-            if (demande.observations && demande.observations.trim() !== '') {
+            if (demande.statut === 'rejete' && demande.observations && demande.observations.trim() !== '') {
                 obsBox.style.display = 'block';
                 obsText.innerText = demande.observations;
-                
-                if (demande.statut === 'rejete') {
-                    obsBox.style.background = 'rgba(239,68,68,0.1)';
-                    obsBox.style.borderColor = 'var(--danger)';
-                    obsTitle.style.color = 'var(--danger)';
-                    obsTitle.innerText = '🛑 سبب الرفض التقني/الاقتصادي:';
-                } else {
-                    obsBox.style.background = 'rgba(16, 185, 129, 0.1)';
-                    obsBox.style.borderColor = 'var(--success)';
-                    obsTitle.style.color = 'var(--success)';
-                    obsTitle.innerText = '✅ ملاحظات الموافقة:';
-                }
             } else {
                 obsBox.style.display = 'none';
             }
 
-            // 3. معالجة الوثائق والرخصة
-            const container = document.getElementById('md-docs-container');
-            container.innerHTML = '';
-            let hasDocs = false;
-
+            // 2. جمع كل الوثائق المتوفرة في طابور
+            listeDocumentsActuels = [];
             const docsList = [
                 { key: 'document_1', name: 'البطاقة الوطنية' },
                 { key: 'document_2', name: 'التصميم الهندسي' },
                 { key: 'document_3', name: 'مرفق إضافي 3' },
                 { key: 'document_4', name: 'مرفق إضافي 4' },
-                { key: 'document_autorisation', name: 'الرخصة الموقعة 🏆', isLicence: true }
+                { key: 'document_autorisation', name: 'الرخصة الموقعة 🏆' }
             ];
 
             docsList.forEach(doc => {
                 const path = demande[doc.key];
                 if (path) {
-                    hasDocs = true;
                     let fileUrl = path.startsWith('http') ? path : `https://smart-city-api-862628887937.europe-west1.run.app/uploads/${path.replace(/\\/g, '/').split('/').pop()}`;
-                    const isPdf = fileUrl.toLowerCase().includes('.pdf');
-                    const icon = isPdf ? '📄' : '🖼️';
-                    const cardStyle = doc.isLicence ? 'border-color: var(--success); background: rgba(16, 185, 129, 0.05);' : 'border-color: #334155; background: var(--card-bg);';
-
-                    container.innerHTML += `
-                        <div class="doc-card" style="border: 1px solid #334155; border-radius: 12px; padding: 15px; text-align: center; ${cardStyle}">
-                            <div style="font-size: 35px; margin-bottom: 10px; cursor: pointer;" onclick="window.open('${fileUrl}', '_blank')">${icon}</div>
-                            <div style="font-size: 12px; color: #f8fafc; margin-bottom: 15px; font-weight: bold;">${doc.name}</div>
-                            <div style="display: flex; gap: 5px;">
-                                <a href="${fileUrl}" target="_blank" class="btn-doc-action btn-view" title="معاينة">👁️</a>
-                                <a href="${fileUrl}" target="_blank" download class="btn-doc-action btn-dl" title="تحميل الملف">📥</a>
-                            </div>
-                        </div>
-                    `;
+                    listeDocumentsActuels.push({ url: fileUrl, titre: doc.name });
                 }
             });
 
-            if(!hasDocs) {
-                container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #94a3b8; padding: 30px;">لا توجد أي وثائق أو رخص مرفقة 📭</div>';
+            // 3. عرض الوثائق أو رسالة "لا يوجد"
+            if (listeDocumentsActuels.length > 0) {
+                document.getElementById('viewer-wrapper').style.display = 'block';
+                document.getElementById('no-docs-msg').style.display = 'none';
+                indexDocumentActuel = 0; // نبدأ من أول وثيقة
+                afficherDocumentActuel();
+            } else {
+                document.getElementById('viewer-wrapper').style.display = 'none';
+                document.getElementById('no-docs-msg').style.display = 'block';
             }
 
             document.getElementById('modalDossier').style.display = 'block';
+        }
+
+        // 🎬 دالة رسم الوثيقة في الشاشة
+        function afficherDocumentActuel() {
+            if (listeDocumentsActuels.length === 0) return;
+
+            const doc = listeDocumentsActuels[indexDocumentActuel];
+            document.getElementById('vd-title').innerText = doc.titre;
+            document.getElementById('vd-counter').innerText = `${indexDocumentActuel + 1} / ${listeDocumentsActuels.length}`;
+            document.getElementById('vd-download').href = doc.url;
+
+            const isPdf = doc.url.toLowerCase().includes('.pdf');
+            const contentDiv = document.getElementById('vd-content');
+            
+            // إضافة سبينر تحميل صغير لجمالية الانتقال
+            contentDiv.innerHTML = '<span style="color:#64748b;">جاري التحميل... ⏳</span>';
+
+            setTimeout(() => {
+                if (isPdf) {
+                    contentDiv.innerHTML = `<iframe src="${doc.url}" style="width: 100%; height: 100%; border: none; background: white;"></iframe>`;
+                } else {
+                    contentDiv.innerHTML = `<img src="${doc.url}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+                }
+            }, 100); // تأخير بسيط لضمان تنظيف الشاشة
+
+            // التحكم في الأسهم (إخفاء السهم إذا كنا في البداية أو النهاية)
+            document.getElementById('btn-prev').disabled = (indexDocumentActuel === 0);
+            document.getElementById('btn-next').disabled = (indexDocumentActuel === listeDocumentsActuels.length - 1);
+        }
+
+        // 🔄 دالة الانتقال بالأسهم
+        function changerDocument(direction) {
+            const nouvelleIndex = indexDocumentActuel + direction;
+            if (nouvelleIndex >= 0 && nouvelleIndex < listeDocumentsActuels.length) {
+                indexDocumentActuel = nouvelleIndex;
+                afficherDocumentActuel();
+            }
         }
             // 👁️ دالة فتح تفاصيل الملف في الأرشيف
         // 👁️ دالة فتح نافذة الوثائق والرخصة فقط
