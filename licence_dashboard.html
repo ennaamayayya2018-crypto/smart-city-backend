@@ -168,7 +168,7 @@
 
     <div id="customConfirmModal" class="modal" style="z-index: 10005;">
         <div class="confirm-modal-content">
-            <div style="font-size: 50px; margin-bottom: 10px;">🏆</div>
+            <div style="font-size: 50px; margin-bottom: 10px;"> </div>
             <h3 style="margin-top: 0; color: var(--primary);">تأكيد إصدار الرخصة</h3>
             <p style="color: #64748b; margin-bottom: 10px;">هل أنت متأكد من تسليم الترخيص النهائي لهذا الملف؟ سيتم إرسال إشعار للمواطن.</p>
             <div class="confirm-btns">
@@ -390,7 +390,7 @@
                 });
 
                 if(response.ok) {
-                    showToast('تم إصدار الرخصة وأرشفتها بنجاح! 🏆');
+                    showToast('تم إصدار الرخصة وأرشفتها بنجاح!  ');
                     
                     // 🟢 توجيه النافذة الفارغة نحو رسالة الواتساب للتبشير
                     const waUrl = genererLienWhatsApp(demande.nom_complet, demande.cin, demande.type_demande, demande.numero_whatsapp);
