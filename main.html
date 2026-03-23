@@ -3,30 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>البوابة الرقمية الذكية - تدبير الملك العمومي</title>
+    <title>المنصة الرقمية لتدبير الملك العمومي - العيون</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         /* 🌟 المتغيرات والأساسيات */
         :root { 
-            --primary: #c2410c; /* مستوحى من لون الشعار (القرميدي/الترابي) */
+            --primary: #c2410c; 
             --primary-dark: #9a3412;
             --dark-bg: #0f172a; 
-            --glass-bg: rgba(15, 23, 42, 0.65);
-            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
-        body { font-family: 'Cairo', sans-serif; margin: 0; padding: 0; background-color: var(--dark-bg); color: white; overflow-x: hidden; }
+        
+        body { font-family: 'Cairo', sans-serif; margin: 0; padding: 0; background-color: var(--dark-bg); color: white; overflow-x: hidden; scroll-behavior: smooth; }
         
         /* 🌟 شريط الملاحة (Navbar) */
         .navbar { position: fixed; top: 0; width: 100%; padding: 15px 50px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); box-sizing: border-box; transition: 0.4s; }
         .navbar.scrolled { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--glass-border); box-shadow: 0 4px 30px rgba(0,0,0,0.5); }
         
         .brand { display: flex; align-items: center; gap: 15px; }
-        .logo-img { height: 60px; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.5)); } /* الشعار */
-        .brand-text { font-size: 24px; font-weight: 900; color: white; letter-spacing: 1px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .logo-img { height: 50px; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.5)); }
+        .brand-text { font-size: 22px; font-weight: 900; color: white; letter-spacing: 1px; }
         
         .nav-links { display: flex; gap: 30px; }
-        .nav-links a { text-decoration: none; color: #e2e8f0; font-weight: 700; font-size: 16px; transition: 0.3s; }
-        .nav-links a:hover { color: var(--primary); text-shadow: 0 0 10px rgba(194, 65, 12, 0.5); }
+        .nav-links a { text-decoration: none; color: #e2e8f0; font-weight: 700; font-size: 15px; transition: 0.3s; }
+        .nav-links a:hover { color: var(--primary); }
 
         /* 🌟 قسم الواجهة البانورامية (Hero Section) */
         .hero { 
@@ -38,150 +39,77 @@
             align-items: center; 
             text-align: center; 
             padding: 0 20px;
-            /* الصورة الليلية كخلفية */
             background: url('222 (1).jpg') no-repeat center center/cover;
             background-attachment: fixed;
         }
-        /* التعتيم فوق الصورة لإبراز النص */
-        .hero::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.4) 100%); z-index: 1; }
+        .hero::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%); z-index: 1; }
         
-        .hero-content { position: relative; z-index: 2; margin-top: -50px; }
-        .hero h1 { font-size: 60px; margin-bottom: 20px; font-weight: 900; background: linear-gradient(to left, #fff, #cbd5e1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: slideUp 1s ease-out; }
-        .hero p { font-size: 22px; max-width: 800px; line-height: 1.8; color: #e2e8f0; margin: 0 auto 50px auto; animation: slideUp 1.2s ease-out; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
+        .hero-content { position: relative; z-index: 2; }
+        .hero h1 { font-size: 55px; margin-bottom: 20px; font-weight: 900; line-height: 1.2; background: linear-gradient(to bottom, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero p { font-size: 20px; max-width: 750px; color: #cbd5e1; margin: 0 auto 50px auto; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
 
         /* 🌟 بطاقات التوجيه (Glassmorphism) */
-        .portals-container { display: flex; justify-content: center; gap: 40px; position: relative; z-index: 2; flex-wrap: wrap; animation: fadeIn 1.5s ease-out; }
+        .portals-container { display: flex; justify-content: center; gap: 30px; position: relative; z-index: 2; flex-wrap: wrap; }
         
         .portal-card { 
             background: var(--glass-bg); 
-            backdrop-filter: blur(16px); 
-            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(12px); 
             border: 1px solid var(--glass-border); 
-            width: 380px; 
-            padding: 50px 30px; 
-            border-radius: 24px; 
-            box-shadow: 0 30px 60px rgba(0,0,0,0.4); 
+            width: 350px; 
+            padding: 40px 25px; 
+            border-radius: 20px; 
             text-align: center; 
-            transition: all 0.4s ease; 
+            transition: 0.4s; 
             cursor: pointer; 
-            position: relative;
-            overflow: hidden;
         }
-        .portal-card::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); transition: 0.5s; }
-        .portal-card:hover::before { left: 100%; }
-        .portal-card:hover { transform: translateY(-10px); background: rgba(30, 41, 59, 0.8); border-color: var(--primary); box-shadow: 0 40px 80px rgba(194, 65, 12, 0.2); }
+        .portal-card:hover { transform: translateY(-10px); border-color: var(--primary); background: rgba(30, 41, 59, 0.9); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
         
-        .portal-icon { font-size: 55px; margin-bottom: 20px; display: inline-block; text-shadow: 0 0 20px rgba(255,255,255,0.3); }
-        .portal-card h2 { font-size: 28px; margin-bottom: 15px; color: white; }
-        .portal-card p { color: #cbd5e1; font-size: 16px; margin-bottom: 35px; line-height: 1.6; }
+        .portal-icon { font-size: 50px; margin-bottom: 20px; display: block; }
+        .portal-card h2 { font-size: 24px; margin-bottom: 15px; }
+        .portal-card p { color: #94a3b8; font-size: 15px; margin-bottom: 30px; min-height: 70px; }
         
-        .btn { display: inline-block; padding: 15px 40px; border-radius: 50px; font-weight: 900; text-decoration: none; font-size: 18px; transition: 0.3s; width: 85%; box-sizing: border-box; text-transform: uppercase; letter-spacing: 1px; }
-        .btn-primary { background: var(--primary); color: white; border: none; box-shadow: 0 10px 20px rgba(194, 65, 12, 0.4); }
-        .btn-primary:hover { background: var(--primary-dark); box-shadow: 0 15px 30px rgba(194, 65, 12, 0.6); }
-        .btn-outline { background: transparent; color: white; border: 2px solid white; }
+        .btn { display: inline-block; padding: 12px 30px; border-radius: 12px; font-weight: 700; text-decoration: none; transition: 0.3s; width: 100%; box-sizing: border-box; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-outline { border: 2px solid white; color: white; }
         .btn-outline:hover { background: white; color: var(--dark-bg); }
 
-        /* 🌟 قسم المدينة (About Section - النسخة الزجاجية الداكنة) */
+        /* 🌟 قسم رؤية المدينة (النسخة الزجاجية الداكنة التي طلباتها) */
         .city-section { 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 50px; 
-            padding: 100px 50px; 
-            /* خلفية داكنة متدرجة بدلاً من الأبيض */
-            background: linear-gradient(135deg, #0f172a, #1e293b); 
-            color: white; /* تغيير لون النص للون الفاتح */
-            flex-wrap: wrap; 
-            position: relative;
-            z-index: 2;
+            display: flex; align-items: center; justify-content: center; gap: 60px; padding: 100px 50px; 
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; flex-wrap: wrap; 
         }
-        
-        .city-image-container { flex: 1; min-width: 300px; max-width: 600px; position: relative; }
-        
-        /* الصورة النهارية مع إطار عصري زجاجي */
-        .city-image { 
-            width: 100%; 
-            border-radius: 20px; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5); /* ظل داكن أقوى */
-            object-fit: cover; 
-            border: 1px solid var(--glass-border); /* إضافة حد زجاجي للصورة */
-        }
-        
-        .city-image-container::after { 
-            content: ''; 
-            position: absolute; 
-            bottom: -20px; 
-            right: -20px; 
-            width: 100px; 
-            height: 100px; 
-            background: radial-gradient(circle, var(--primary) 10%, transparent 10%); 
-            background-size: 20px 20px; 
-            z-index: -1; 
-            opacity: 0.3; /* تخفيف السطوع ليتناسب مع الظلام */
-        }
-
-        .city-text { flex: 1; min-width: 300px; max-width: 600px; }
-        .city-text h2 { font-size: 40px; color: white; margin-bottom: 20px; font-weight: 900; } /* عنوان أبيض */
+        .city-text { flex: 1; min-width: 300px; max-width: 550px; }
+        .city-text h2 { font-size: 38px; font-weight: 900; margin-bottom: 25px; }
         .city-text h2 span { color: var(--primary); }
-        .city-text p { font-size: 18px; color: #cbd5e1; line-height: 1.8; margin-bottom: 30px; } /* نص رمادي فاتح مريح للعين */
+        .city-text p { font-size: 18px; color: #94a3b8; line-height: 1.8; margin-bottom: 40px; }
         
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .stat-box { 
-            border-right: 4px solid var(--primary); 
-            padding-right: 15px; 
-            background: var(--glass-bg); /* خلفية زجاجية للإحصائيات */
-            backdrop-filter: blur(10px);
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); 
+            padding: 20px; border-radius: 15px; border-right: 4px solid var(--primary); 
         }
-        .stat-num { font-size: 30px; font-weight: 900; color: white; } /* رقم أبيض */
-        .stat-label { font-size: 14px; color: #94a3b8; font-weight: bold; margin-top: 5px; } /* وصف رمادي */
-        
-        /* الصورة النهارية مع إطار عصري */
-        .city-image { width: 100%; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); object-fit: cover; }
-        .city-image-container::after { content: ''; position: absolute; bottom: -20px; right: -20px; width: 100px; height: 100px; background: radial-gradient(circle, var(--primary) 10%, transparent 10%); background-size: 20px 20px; z-index: -1; opacity: 0.5; }
+        .stat-num { font-size: 28px; font-weight: 900; color: white; display: block; }
+        .stat-label { font-size: 14px; color: #64748b; }
 
-        .city-text { flex: 1; min-width: 300px; max-width: 600px; }
-        .city-text h2 { font-size: 40px; color: #0f172a; margin-bottom: 20px; font-weight: 900; }
-        .city-text h2 span { color: var(--primary); }
-        .city-text p { font-size: 18px; color: #475569; line-height: 1.8; margin-bottom: 30px; }
-        
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .stat-box { border-right: 4px solid var(--primary); padding-right: 15px; }
-        .stat-num { font-size: 30px; font-weight: 900; color: #0f172a; }
-        .stat-label { font-size: 14px; color: #64748b; font-weight: bold; }
+        .city-image-container { flex: 1; min-width: 300px; max-width: 550px; position: relative; }
+        .city-image { width: 100%; border-radius: 20px; box-shadow: 0 30px 60px rgba(0,0,0,0.5); border: 1px solid var(--glass-border); }
 
-        /* 🌟 الفوتر */
-        .footer { background: var(--dark-bg); color: #94a3b8; text-align: center; padding: 30px; border-top: 1px solid #1e293b; }
+        .footer { background: #020617; color: #475569; text-align: center; padding: 40px; border-top: 1px solid var(--glass-border); }
 
-        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        @media (max-width: 768px) { 
-            .hero h1 { font-size: 40px; } 
-            .navbar { padding: 15px 20px; } 
-            .nav-links { display: none; } /* إخفاء الروابط في الهاتف للتبسيط */
-            .city-section { padding: 50px 20px; text-align: center; }
-            .stat-box { border-right: none; border-bottom: 4px solid var(--primary); padding-bottom: 10px; }
-        }
+        @media (max-width: 768px) { .navbar { padding: 15px 20px; } .hero h1 { font-size: 35px; } .city-section { padding: 60px 20px; } }
     </style>
 </head>
 <body>
 
     <nav class="navbar" id="navbar">
         <div class="brand">
-            <svg class="logo-img" viewBox="0 0 512 512" width="55" height="55" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <linearGradient id="gradLogo" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#ea580c;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
-                    </linearGradient>
-                </defs>
-                <polygon points="256,22 466,144 466,368 256,490 46,368 46,144" fill="url(#gradLogo)" />
-                <path d="M 150 400 L 150 280 Q 256 150 362 280 L 362 400 L 300 400 L 300 280 Q 256 220 212 280 L 212 400 Z" fill="#ffffff" />
-                <circle cx="256" cy="180" r="30" fill="#ffffff" />
-            </svg> </div>
+            <svg class="logo-img" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                <defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#ea580c"/><stop offset="100%" style="stop-color:#f59e0b"/></linearGradient></defs>
+                <polygon points="256,22 466,144 466,368 256,490 46,368 46,144" fill="url(#g)" />
+                <path d="M 150 400 L 150 280 Q 256 150 362 280 L 362 400 L 300 400 L 300 280 Q 256 220 212 280 L 212 400 Z" fill="#fff" />
+            </svg>
+            <span class="brand-text">ذكاء العيون الرقمي</span>
+        </div>
         <div class="nav-links">
             <a href="#about">رؤية المدينة</a>
             <a href="index.html">بوابة المواطن</a>
@@ -191,25 +119,23 @@
 
     <header class="hero">
         <div class="hero-content">
-            <h1>المنصة الرقمية لتدبير الملك العمومي</h1>
-            <p>مقاربة عصرية لمدينة مستدامة. نقدم لكم منظومة رقمية متكاملة تضمن السرعة، الشفافية، وتقريب الإدارة من المواطن.</p>
+            <h1>المنصة الرقمية لتدبير<br>الملك العمومي - العيون</h1>
+            <p>نحو بيئة حضرية ذكية ومستدامة. منظومة رقمية متكاملة تضمن الشفافية والسرعة في معالجة طلبات رخص الأرصفة والإشهار.</p>
             
             <div class="portals-container">
-                
                 <div class="portal-card" onclick="window.location.href='index.html'">
-                    <div class="portal-icon">🌍</div>
-                    <h2>بوابة المواطنين </h2>
-                    <p>فضاء رقمي مؤمن لتقديم طلبات إستغلال الملك العمومي (رخص الإشهار، الأرصفة) وتتبع مسارها خطوة بخطوة.</p>
-                    <a href="index.html" class="btn btn-primary">ولوج الفضاء </a>
+                    <span class="portal-icon">🌍</span>
+                    <h2>بوابة المواطنين</h2>
+                    <p>أودع طلبك إلكترونياً، وارفق وثائقك، وتابع حالة ملفك لحظة بلحظة دون عناء التنقل.</p>
+                    <a href="index.html" class="btn btn-primary">ولوج الفضاء</a>
                 </div>
 
                 <div class="portal-card" onclick="window.location.href='login.html'">
-                    <div class="portal-icon">🔐</div>
-                    <h2>الفضاء الإداري والمهني</h2>
-                    <p>منصة المعالجة المخصصة للسادة المهندسين والموظفين (المكتب الاقتصادي، التعمير، الرخص، والإدارة العليا).</p>
-                    <a href="login.html" class="btn btn-outline">تسجيل الدخول ⚙️</a>
+                    <span class="portal-icon">🔐</span>
+                    <h2>الفضاء الإداري</h2>
+                    <p>منصة المعالجة المخصصة للسادة الموظفين والمديرين لإدارة الرخص والموارد البشرية.</p>
+                    <a href="login.html" class="btn btn-outline">تسجيل الدخول</a>
                 </div>
-
             </div>
         </div>
     </header>
@@ -217,37 +143,34 @@
     <section id="about" class="city-section">
         <div class="city-text">
             <h2>نحو إدارة <span>رقمية 100%</span></h2>
-            <p>تماشياً مع التطور العمراني السريع والمشاريع الكبرى التي تشهدها حاضرتنا،  نهدف إلى تبسيط المساطر الإدارية،  والحفاظ على جمالية وتنظيم الملك العمومي.</p>
+            <p>نعمل في مدينة العيون على تحديث الخدمات الجماعية من خلال تصفير المعاملات الورقية واعتماد حلول ذكية تسهم في جمالية المدينة وتنظيم فضائها العام.</p>
             
             <div class="stats-grid">
                 <div class="stat-box">
-                    <div class="stat-num">0 الورق</div>
-                    <div class="stat-label">معالجة رقمية كاملة</div>
+                    <span class="stat-num">0 الورق</span>
+                    <span class="stat-label">معالجة رقمية شاملة</span>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-num">24/7</div>
-                    <div class="stat-label">خدمة مستمرة للمواطن</div>
+                    <span class="stat-num">24/7</span>
+                    <span class="stat-label">خدمة متاحة على مدار الساعة</span>
                 </div>
             </div>
         </div>
         
         <div class="city-image-container">
-            <img src="1699566331.jpeg" alt="معالم المدينة" class="city-image">
+            <img src="1699566331.jpeg" alt="معالم مدينة العيون" class="city-image">
         </div>
     </section>
 
     <footer class="footer">
-        <p>© 2026 المنصة الرقمية لتدبير الملك العمومي.</p>
+        <p>© 2026 المنصة الرقمية لتدبير الملك العمومي - جماعة العيون.</p>
     </footer>
 
     <script>
         window.addEventListener('scroll', () => {
             const navbar = document.getElementById('navbar');
-            if (window.scrollY > 50) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
+            if (window.scrollY > 50) navbar.classList.add('scrolled');
+            else navbar.classList.remove('scrolled');
         });
     </script>
 </body>
