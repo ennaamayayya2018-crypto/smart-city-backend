@@ -82,6 +82,19 @@
 
         #toast { visibility: hidden; min-width: 250px; background-color: var(--danger); color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 10000; bottom: 30px; left: 50%; transform: translateX(-50%); font-weight: bold; transition: 0.4s; opacity: 0; }
         #toast.show { visibility: visible; bottom: 50px; opacity: 1; }
+        /* 🌟 تصميم أزرار المرفقات المصغرة (Chips) */
+        .doc-chip { background: transparent; border: 1px solid #334155; color: #cbd5e1; padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; gap: 5px; margin: 2px; }
+        .doc-chip:hover { background: rgba(59, 130, 246, 0.15); border-color: var(--accent); color: white; transform: translateY(-2px); }
+
+        /* 🎬 تصميم العارض السينمائي (Lightbox) */
+        .lightbox { display: none; position: fixed; z-index: 99999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.92); backdrop-filter: blur(8px); animation: fadeIn 0.3s; }
+        .lightbox-toolbar { position: absolute; top: 0; left: 0; width: 100%; padding: 15px 30px; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
+        .lightbox-title { color: white; font-weight: bold; font-size: 18px; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+        .lightbox-actions { display: flex; gap: 15px; }
+        .btn-lb-download { background: var(--success); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 5px; transition: 0.2s; }
+        .btn-lb-download:hover { background: #059669; transform: scale(1.05); }
+        .btn-lb-close { background: var(--danger); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-weight: bold; font-size: 24px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; line-height: 1; padding-bottom: 5px; }
+        .btn-lb-close:hover { background: #dc2626; transform: scale(1.1) rotate(90deg); }
     </style>
 </head>
 <body>
@@ -208,6 +221,7 @@
                             <th>الطلب</th>
                             <th>تاريخ الإيداع</th>
                             <th>القرار النهائي</th>
+                            <th>المرفقات والوثائق 📂</th>
                         </tr>
                     </thead>
                     <tbody id="tbody-demandes"></tbody>
@@ -257,17 +271,16 @@
 
     </div>
 
-   <div id="modalDocs" class="modal" style="z-index: 10005;">
-        <div class="modal-content" style="width: 70%; max-width: 800px; height: auto; max-height: 80vh;">
-            <div class="modal-header">
-                <h3 style="margin: 0; color: var(--accent);">👁️ الوثائق المرفقة والرخصة النهائية</h3>
-                <span class="close-btn" onclick="document.getElementById('modalDocs').style.display='none'">&times;</span>
-            </div>
-            <div class="modal-body" style="padding: 30px; overflow-y: auto; background: var(--bg);">
-                <div id="docs-container" class="doc-grid" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px;">
-                    </div>
+   <div id="lightbox" class="lightbox">
+        <div class="lightbox-toolbar">
+            <h3 class="lightbox-title" id="lb-title">اسم الملف</h3>
+            <div class="lightbox-actions">
+                <a id="lb-download" href="#" target="_blank" download class="btn-lb-download">📥 تحميل مباشر</a>
+                <button onclick="closeLightbox()" class="btn-lb-close" title="إغلاق">&times;</button>
             </div>
         </div>
+        <div id="lb-content-area" style="width: 90%; height: 85vh; margin: 80px auto 0; display: flex; justify-content: center; align-items: center;">
+            </div>
     </div>
 
 
@@ -425,6 +438,7 @@
         }
 
         // 🗄️ 2. دالة رسم الجدول مع الترقيم
+        // 🗄️ 2. دالة رسم الجدول مع أزرار المرفقات الذكية
         function afficherArchive(donnees) {
             const tbody = document.getElementById('tbody-demandes');
             tbody.innerHTML = '';
@@ -432,13 +446,36 @@
             if (donnees.length > 0) {
                 donnees.forEach((d, index) => {
                     let badge = d.statut === 'autorise' 
-                        ? `<span class="badge bg-success">مُرخص نهائياً ✨</span>` 
-                        : `<span class="badge bg-danger">مرفوض نهائياً ❌</span>`;
+                        ? `<span class="badge bg-success">مُرخص ✨</span>` 
+                        : `<span class="badge bg-danger">مرفوض ❌</span>`;
                     
                     const date = new Date(d.date_creation).toLocaleDateString('ar-MA');
-                    const cin = d.cin ? d.cin : '<span style="color:#64748b;font-size:11px;">غير مسجل</span>'; // حماية في حال عدم وجود CIN في بعض الملفات القديمة
+                    const cin = d.cin ? d.cin : '<span style="color:#64748b;font-size:11px;">غير مسجل</span>';
                     
-                  tbody.innerHTML += `
+                    // 🌟 صناعة أزرار الوثائق في نفس السطر
+                    let docsHtml = '<div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end;">';
+                    const docsList = [
+                        { key: 'document_1', name: 'البطاقة', icon: '🪪' },
+                        { key: 'document_2', name: 'التصميم', icon: '📐' },
+                        { key: 'document_3', name: 'مرفق 3', icon: '📄' },
+                        { key: 'document_4', name: 'مرفق 4', icon: '📄' },
+                        { key: 'document_autorisation', name: 'الرخصة النهائية', icon: '🏆', color: '#10b981' }
+                    ];
+
+                    docsList.forEach(doc => {
+                        if(d[doc.key]) {
+                            let fileUrl = d[doc.key].startsWith('http') ? d[doc.key] : `https://smart-city-api-862628887937.europe-west1.run.app/uploads/${d[doc.key].replace(/\\/g, '/').split('/').pop()}`;
+                            let styleSup = doc.color ? `border-color:${doc.color}; color:${doc.color};` : '';
+                            docsHtml += `<button class="doc-chip" style="${styleSup}" onclick="openLightbox('${fileUrl}', '${doc.name} - ${d.code_suivi}')" title="عرض ${doc.name}">${doc.icon} ${doc.name}</button>`;
+                        }
+                    });
+                    
+                    if(docsHtml === '<div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end;">') {
+                        docsHtml += '<span style="font-size:11px; color:#64748b;">لا توجد مرفقات</span>';
+                    }
+                    docsHtml += '</div>';
+
+                   tbody.innerHTML += `
                         <tr>
                             <td style="font-weight: bold; color: #94a3b8;">${index + 1}</td>
                             <td><strong style="color:var(--accent);">${d.code_suivi}</strong></td>
@@ -446,16 +483,37 @@
                             <td>${cin}</td>
                             <td>${d.type_demande}</td>
                             <td>${date}</td>
-                            <td>
-                                ${badge}
-                                <button onclick="ouvrirModalDocs('${d.code_suivi}')" style="background:transparent; border:none; font-size:16px; cursor:pointer; margin-right:10px; vertical-align: middle; transition: 0.2s;" title="عرض الوثائق والرخصة" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'">👁️</button>
-                            </td>
+                            <td>${badge}</td>
+                            <td style="min-width: 250px;">${docsHtml}</td>
                         </tr>
                     `;
                 });
             } else { 
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:40px; color: #94a3b8;">لا توجد ملفات مطابقة في الأرشيف 📭</td></tr>`; 
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px; color: #94a3b8;">لا توجد ملفات مطابقة في الأرشيف 📭</td></tr>`; 
             }
+        }
+
+        // 🎬 دالة تشغيل العارض السينمائي (Lightbox)
+        function openLightbox(url, title) {
+            document.getElementById('lb-title').innerText = title;
+            document.getElementById('lb-download').href = url;
+            
+            const contentArea = document.getElementById('lb-content-area');
+            const isPdf = url.toLowerCase().includes('.pdf');
+            
+            if (isPdf) {
+                contentArea.innerHTML = `<object data="${url}" type="application/pdf" style="width: 100%; height: 100%; border-radius: 12px; background: white; box-shadow: 0 0 30px rgba(0,0,0,0.8);"></object>`;
+            } else {
+                contentArea.innerHTML = `<img src="${url}" style="max-width: 100%; max-height: 100%; border-radius: 12px; object-fit: contain; box-shadow: 0 0 30px rgba(0,0,0,0.8);">`;
+            }
+            
+            document.getElementById('lightbox').style.display = 'block';
+        }
+
+        // ❌ دالة إغلاق العارض
+        function closeLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
+            document.getElementById('lb-content-area').innerHTML = ''; // تنظيف الذاكرة
         }
             // 👁️ دالة فتح تفاصيل الملف في الأرشيف
         // 👁️ دالة فتح نافذة الوثائق والرخصة فقط
