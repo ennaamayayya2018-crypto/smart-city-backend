@@ -50,9 +50,6 @@ const getAllUsers = async (req, res) => {
 // ==========================================
 // 4. جلب الصندوق الأسود (سجل الحركات من historique_actions)
 // ==========================================
-// ==========================================
-// 4. جلب الصندوق الأسود (سجل الحركات من historique_actions)
-// ==========================================
 const getAuditTrail = async (req, res) => {
     try {
         // جلب البيانات مباشرة لأن الجدول يحتوي على الأسماء والأرقام مسبقاً
@@ -152,11 +149,25 @@ const getArchiveDefinitif = async (req, res) => {
     }
 };
 
-// 🛑 لا تنسي إضافتها لقائمة التصدير:
-// module.exports = { ..., getArchiveDefinitif };
+// ==========================================
+// 8. حذف موظف (سحب الصلاحيات) 🚨
+// ==========================================
+const supprimerUtilisateur = async (req, res) => {
+    try {
+        const id = req.params.id;
+        // جدار حماية إضافي: نمنع حذف حساب المدير العام الأساسي
+        const query = `DELETE FROM utilisateurs WHERE id = $1 AND role != 'admin' RETURNING *;`;
+        const result = await db.query(query, [id]);
 
-// 🛑 تذكري إضافة اسم الدالة الجديدة إلى قائمة التصدير في نهاية الملف:
-// module.exports = { getStatistiques, getAllDemandes, getAllUsers, getAuditTrail, getChartData, getFichiersEnRetard };
+        if (result.rowCount === 0) {
+            return res.status(400).json({ message: 'لا يمكن حذف هذا الحساب (قد يكون حساب مدير أو غير موجود).' });
+        }
+        res.status(200).json({ message: 'تم سحب الصلاحيات وحذف الموظف بنجاح.' });
+    } catch (error) {
+        res.status(500).json({ message: 'حدث خطأ أثناء محاولة حذف الموظف.' });
+    }
+};
+
 
 module.exports = {
     getStatistiques,
@@ -165,5 +176,6 @@ module.exports = {
     getAuditTrail,
     getChartData,
     getFichiersEnRetard,
-    getArchiveDefinitif
+    getArchiveDefinitif,
+    supprimerUtilisateur
 };
