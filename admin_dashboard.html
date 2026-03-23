@@ -748,15 +748,52 @@
                 }
             }
         }
+        // 🕵️‍♂️ دالة جلب سجل الحركات (مع المترجم الذكي)
         async function fetchAudit() {
             const data = await fetchAdminData('historique');
             const tbody = document.getElementById('tbody-audit');
             tbody.innerHTML = '';
+            
             if (data && data.historique && data.historique.length > 0) {
                 data.historique.forEach(h => {
                     const date = new Date(h.date_action).toLocaleString('ar-MA');
-                    tbody.innerHTML += `<tr><td style="font-size:12px; color:#94a3b8;">${date}</td><td><strong>${h.nom_employe || 'نظام آلي'}</strong></td><td><span style="color:var(--accent);">${h.code_suivi||'-'}</span></td><td><span class="badge bg-eco">${h.action_prise}</span></td><td style="font-size:13px; color:#cbd5e1;">${h.remarques||''}</td></tr>`;
+                    
+                    // 🧠 المترجم الذكي لحالة الملف
+                    let actionText = h.action_prise;
+                    let badgeColor = 'var(--accent)';
+                    
+                    if (actionText.includes('en_attente_urbanisme')) {
+                        actionText = 'إرسال لمصلحة التعمير 🔵';
+                        badgeColor = '#3b82f6';
+                    } else if (actionText.includes('en_attente_licence')) {
+                        actionText = 'إرسال لمصلحة الرخص 🟣';
+                        badgeColor = '#a855f7';
+                    } else if (actionText.includes('autorise')) {
+                        actionText = 'موافقة وإصدار رخصة ✨';
+                        badgeColor = '#10b981';
+                    } else if (actionText.includes('rejete')) {
+                        actionText = 'رفض الملف نهائياً ❌';
+                        badgeColor = '#ef4444';
+                    } else if (actionText.includes('en_attente_eco')) {
+                        actionText = 'إرجاع للمكتب الاقتصادي 🟡';
+                        badgeColor = '#f59e0b';
+                    }
+
+                    // تصميم حالة الإجراء
+                    const actionBadge = `<span style="background: rgba(255,255,255,0.1); border: 1px solid ${badgeColor}; color: white; padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: bold;">${actionText}</span>`;
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-size:12px; color:#94a3b8; direction: ltr; text-align: right;">${date}</td>
+                            <td><strong style="color: #e2e8f0;">${h.nom_employe || 'النظام الآلي'}</strong></td>
+                            <td><strong style="color:var(--accent);">${h.code_suivi||'-'}</strong></td>
+                            <td>${actionBadge}</td>
+                            <td style="font-size:13px; color:#cbd5e1; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${h.remarques||'---'}">${h.remarques||'---'}</td>
+                        </tr>
+                    `;
                 });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color: #94a3b8;">لا توجد حركات مسجلة في النظام بعد 📭</td></tr>`;
             }
         }
         
