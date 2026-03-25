@@ -232,7 +232,7 @@
         }
 
         async function chargerDemandes() {
-            try {const response = await fetch('https://smart-city-api-862628887937.europe-west1.run.app/api/eco/demandes', {
+            try {const response = await fetch('/api/eco/demandes', {
                 
                     method: 'GET',
                     headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
@@ -334,8 +334,7 @@
                        // إذا كان الملف قديماً (تم رفعه قبل Cloudinary ولا يبدأ بـ http)
                        if (!docPath.startsWith('http')) {
                            const nomFichier = docPath.split('/').pop().split('\\').pop();
-                           fileUrl = `https://smart-city-api-862628887937.europe-west1.run.app/uploads/${nomFichier}`;
-                       }
+                           fileUrl = `https://rokhsa-laayoune.onrender.com/uploads/${nomFichier}`;
 
                        // تحديد أيقونة الملف بناءً على الرابط النهائي
                        const isPdf = fileUrl.toLowerCase().includes('.pdf');
@@ -472,8 +471,7 @@ function closeViewer() {
             btnElement.disabled = true;
 
             try {
-                const response = await fetch(`https://smart-city-api-862628887937.europe-west1.run.app/api/eco/demandes/${id}/traiter`, {
-                    method: 'PUT',
+                    const response = await fetch(`/api/eco/demandes/${id}/traiter`, {
                     headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ code_suivi: demande.code_suivi, nouveau_statut: nouveauStatut, observations: observations })
                 });
@@ -515,7 +513,7 @@ function closeViewer() {
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
     // 1. الاتصال برادار الخادم
-    const socket = io('https://smart-city-api-862628887937.europe-west1.run.app');
+    const socket = io('https://rokhsa-laayoune.onrender.com');
     
     // 2. دالة تشغيل صوت التنبيه وإظهار الإشعار المرئي
     function declencherAlerte(donnees, couleur) {
@@ -554,7 +552,7 @@ function closeViewer() {
     else if (pageActuelle.includes('licence_dashboard.html')) {
         // إذا كنا في الرخص، نستمع للملفات الجاهزة
         socket.on('alerte_licence', (data) => declencherAlerte(data, '#10b981')); // لون أخضر
-    }
+    }}
 </script>
 </body>
-</html>
+</html>     

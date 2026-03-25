@@ -200,7 +200,7 @@
         async function chargerDemandes() {
             try {
                 // 📡 تم التعديل: الاتصال بـ API السحابي
-                const response = await fetch('https://smart-city-api-862628887937.europe-west1.run.app/api/licence/demandes', {
+                const response = await fetch('/api/licence/demandes', {
                     method: 'GET',
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
@@ -283,7 +283,7 @@
                         let fileUrl = docPath; 
                         if (!docPath.startsWith('http')) {
                             const nomFichier = docPath.split('/').pop().split('\\').pop();
-                            fileUrl = `https://smart-city-api-862628887937.europe-west1.run.app/uploads/${nomFichier}`;
+                            fileUrl = `https://rokhsa-laayoune.onrender.com/uploads/${nomFichier}`;
                         }
 
                         const isPdf = fileUrl.toLowerCase().includes('.pdf');
@@ -383,7 +383,7 @@
                     formData.append('document_autorisation', fileInput.files[0]);
                 }
 
-                const response = await fetch(`https://smart-city-api-862628887937.europe-west1.run.app/api/licence/delivrer`, {
+                const response = await fetch(`/api/licence/delivrer`, {
                     method: 'PUT',
                     headers: { 'Authorization': 'Bearer ' + token }, 
                     body: formData
@@ -425,7 +425,7 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
     // 1. الاتصال برادار الخادم السحابي (تم التعديل)
-    const socket = io('https://smart-city-api-862628887937.europe-west1.run.app');
+    const socket = io('https://rokhsa-laayoune.onrender.com');
     
     // 2. دالة تشغيل صوت التنبيه وإظهار الإشعار المرئي
     function declencherAlerte(donnees, couleur) {
