@@ -95,10 +95,11 @@
 
             try {
                 // 📡 التحديث السحابي للرابط
-                const response = await fetch('https://smart-city-api-862628887937.europe-west1.run.app/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email, mot_de_passe: password })
+                // ✅ الطريقة الصحيحة: نطلب من الموقع نفسه وهو يوجهنا للسيرفر سراً
+                const response = await fetch('/api/auth/login', {
+                 method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ email: email, mot_de_passe: password })
                 });
 
                 const data = await response.json();
