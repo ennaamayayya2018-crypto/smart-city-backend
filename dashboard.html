@@ -335,6 +335,7 @@
                        if (!docPath.startsWith('http')) {
                            const nomFichier = docPath.split('/').pop().split('\\').pop();
                            fileUrl = `https://rokhsa-laayoune.onrender.com/uploads/${nomFichier}`;
+                          }
 
                        // تحديد أيقونة الملف بناءً على الرابط النهائي
                        const isPdf = fileUrl.toLowerCase().includes('.pdf');
@@ -553,7 +554,7 @@ function closeViewer() {
         // إذا كنا في الرخص، نستمع للملفات الجاهزة
         socket.on('alerte_licence', (data) => declencherAlerte(data, '#10b981')); // لون أخضر
     }
-    }
+    
 </script>
 </body>
 </html>     
