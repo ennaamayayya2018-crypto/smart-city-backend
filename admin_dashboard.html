@@ -392,7 +392,7 @@
 
         async function fetchAdminData(endpoint) {
             try {
-                const response = await fetch(`https://smart-city-api-862628887937.europe-west1.run.app/api/admin/${endpoint}`, {
+                const response = await fetch(`/api/admin/${endpoint}`, {
                     method: 'GET',
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
@@ -547,7 +547,7 @@
             docsList.forEach(doc => {
                 const path = demande[doc.key];
                 if (path) {
-                    let fileUrl = path.startsWith('http') ? path : `https://smart-city-api-862628887937.europe-west1.run.app/uploads/${path.replace(/\\/g, '/').split('/').pop()}`;
+                    let fileUrl = path.startsWith('http') ? path : `https://rokhsa-laayoune.onrender.com/uploads/${path.replace(/\\/g, '/').split('/').pop()}`;
                     listeDocumentsActuels.push({ url: fileUrl, titre: doc.name });
                 }
             });
@@ -626,7 +626,7 @@
                 if (path) {
                     hasDocs = true;
                     // معالجة الرابط (محلي قديم أو سحابي جديد)
-                    let fileUrl = path.startsWith('http') ? path : `https://smart-city-api-862628887937.europe-west1.run.app/uploads/${path.replace(/\\/g, '/').split('/').pop()}`;
+                    let fileUrl = path.startsWith('http') ? path : `https://rokhsa-laayoune.onrender.com/uploads/${path.replace(/\\/g, '/').split('/').pop()}`;
                     const isPdf = fileUrl.toLowerCase().includes('.pdf');
                     const icon = isPdf ? '📄' : '🖼️';
                     const btnStyle = doc.isLicence ? 'background: var(--success);' : 'background: var(--accent);';
@@ -728,7 +728,7 @@
         async function supprimerEmploye(id, nom) {
             if(confirm(`هل أنت متأكد من سحب الصلاحيات وحذف الموظف: ${nom}؟`)) {
                 try {
-                    const response = await fetch(`https://smart-city-api-862628887937.europe-west1.run.app/api/admin/utilisateurs/${id}`, {
+                    const response = await fetch(`/api/admin/utilisateurs/${id}`, {
                         method: 'DELETE',
                         headers: { 'Authorization': 'Bearer ' + token }
                     });
@@ -828,8 +828,7 @@
             const role_employe = document.getElementById('role').value;
 
             try {
-                const response = await fetch('https://smart-city-api-862628887937.europe-west1.run.app/api/auth/register', {
-                    method: 'POST',
+                const response = await fetch(`/api/auth/register`, {
                     headers: { 
                         'Content-Type': 'application/json',
                         'Authorization': 'Bearer ' + token

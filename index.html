@@ -245,7 +245,7 @@
                 const formData = new FormData(formElement);
 
                 // 📡 إرسال الطرد للخادم (تم تعديل الرابط)
-                const response = await fetch('https://smart-city-api-862628887937.europe-west1.run.app/api/citoyen/nouvelle-demande', {
+                const response = await fetch('/api/citoyen/nouvelle-demande', {
                     method: 'POST',
                     body: formData // FormData تقوم بضبط الـ Headers تلقائياً، هذا ممتاز!
                 });
@@ -294,7 +294,7 @@
 
             try {
                 // (تم تعديل الرابط)
-                const response = await fetch(`https://smart-city-api-862628887937.europe-west1.run.app/api/citoyen/suivi/${code}`);
+                const response = await fetch(`/api/citoyen/suivi/${code}`);
                 const data = await response.json();
 
                 const resultBox = document.getElementById('tracking-result');
