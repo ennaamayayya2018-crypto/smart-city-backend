@@ -96,10 +96,11 @@
             try {
                 // 📡 التحديث السحابي للرابط
                 // ✅ الطريقة الصحيحة: نطلب من الموقع نفسه وهو يوجهنا للسيرفر سراً
-                const response = await fetch('/api/auth/login', {
-                 method: 'POST',
+                // 📡 نطلب المسار المختصر لكي يقوم Vercel بالتحويل تلقائياً
+                 const response = await fetch('/api/auth/login', {
+                  method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ email: email, mot_de_passe: password })
+                 body: JSON.stringify({ email: email, mot_de_passe: password })
                 });
 
                 const data = await response.json();
