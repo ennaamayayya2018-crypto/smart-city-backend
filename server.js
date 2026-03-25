@@ -23,7 +23,15 @@ const port = process.env.PORT || 3000;
 // ==========================================
 // 1. إعدادات الترجمة والحماية (Middlewares)
 // ==========================================
-app.use(cors()); 
+// 🛡️ السماح فقط لروابط مشروعك بالوصول للبيانات
+app.use(cors({
+  origin: [
+    'https://rokhsa-laayoune.vercel.app',
+    'http://localhost:3000' // للتحسينات المستقبلية في بيئة التطوير
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+})); 
 app.use(express.json()); 
 
 // ==========================================

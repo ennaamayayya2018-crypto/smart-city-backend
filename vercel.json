@@ -1,5 +1,9 @@
 {
   "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://smart-city-api-862628887937.europe-west1.run.app/api/$1"
+    },
     { "source": "/", "destination": "/main.html" },
     { "source": "/(.*)", "destination": "/$1" }
   ]
