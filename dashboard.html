@@ -214,7 +214,7 @@
 
     <div id="documentViewer">
         <span class="close-viewer" onclick="closeViewer()">&times;</span>
-        <iframe id="viewerFrame"></iframe>
+        <div id="viewerContent" style="width: 100%; height: 100%;"></div>
     </div>
 
     <script>
@@ -232,8 +232,8 @@
         }
 
         async function chargerDemandes() {
-            try {const response = await fetch('/api/eco/demandes', {
-                
+            try {
+                const response = await fetch('/api/eco/demandes', {
                     method: 'GET',
                     headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
                 });
@@ -265,7 +265,7 @@
             tbody.innerHTML = '';
 
             if(donnees.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><span class="empty-state-icon"> </span>! لا توجد ملفات معلقة حالياً.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><span class="empty-state-icon">📭</span>لا توجد ملفات معلقة حالياً.</td></tr>`;
                 return;
             }
 
@@ -307,7 +307,7 @@
             afficherTableau(resultats);
         }
 
-        // ====== הדالة المعدلة للسحابة ======
+        // ====== دالة فتح المودال وعرض البيانات ======
         function ouvrirModal(id) {
             const demande = listeDemandes.find(d => d.id === id);
             
@@ -328,16 +328,13 @@
                    if (docPath) {
                        hasDocs = true;
         
-                       // 🌟 التعديل السحابي: التحقق من نوع الرابط
+                       // التحقق من نوع الرابط (محلي أو سحابي)
                        let fileUrl = docPath; 
-                       
-                       // إذا كان الملف قديماً (تم رفعه قبل Cloudinary ولا يبدأ بـ http)
                        if (!docPath.startsWith('http')) {
                            const nomFichier = docPath.split('/').pop().split('\\').pop();
                            fileUrl = `https://rokhsa-laayoune.onrender.com/uploads/${nomFichier}`;
-                          }
+                       }
 
-                       // تحديد أيقونة الملف بناءً على الرابط النهائي
                        const isPdf = fileUrl.toLowerCase().includes('.pdf');
                        const icon = isPdf ? '📄' : '🖼️';
         
@@ -358,76 +355,68 @@
                     docBox.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #94a3b8; padding: 40px; border: 2px dashed #cbd5e1; border-radius: 10px;">لا توجد وثائق مرفقة مع هذا الملف 📁</div>';
                 }
 
-                // 🧠 الذكاء الإداري المحدث مع تعديل نصوص الأزرار
-              // 🧠 الذكاء الإداري المحدث (تصحيح مسار العمود الإشهاري والهمزات)
-        const btnUrb = document.getElementById('btn-urb');
-        const btnLic = document.getElementById('btn-lic');
-        const btnRejText = document.querySelector('.btn-reject span');
-        
-        // تعريف قائمة مسارات التعمير بدقة مطابقة لواجهة المواطن
-        const typesUrbanisme = ['رصيف مغطى', 'رصيف غير مغطى', 'عمود إشهاري'];
+                // 🧠 الذكاء الإداري للتحكم في الأزرار بناءً على مسار الملف
+                const btnUrb = document.getElementById('btn-urb');
+                const btnLic = document.getElementById('btn-lic');
+                const btnRejText = document.querySelector('.btn-reject span');
+                
+                const typesUrbanisme = ['رصيف مغطى', 'رصيف غير مغطى', 'عمود إشهاري'];
 
-        if (demande.statut === 'retour_urb_favorable') {
-            btnUrb.style.display = 'none';   
-            btnLic.style.display = 'flex';  
-            btnRejText.innerText = '❌ رفض (نقص الوثائق)';
-        } else if (demande.statut === 'retour_urb_defavorable') {
-            btnUrb.style.display = 'none';   
-            btnLic.style.display = 'none';   
-            btnRejText.innerText = '❌ تأكيد الرفض التقني وإشعار المواطن';
-        } else {
-            btnRejText.innerText = '❌ رفض (نقص الوثائق)';
-            
-            // ✅ المسار الصحيح 100% المعتمد على المصفوفة
-            if (typesUrbanisme.includes(demande.type_demande)) {
-                btnUrb.style.display = 'flex';  
-                btnLic.style.display = 'none';
-            } else { 
-                // الحالات الأخرى (مثل لوحة إشهارية) تذهب للرخص
-                btnUrb.style.display = 'none';
-                btnLic.style.display = 'flex';  
+                if (demande.statut === 'retour_urb_favorable') {
+                    btnUrb.style.display = 'none';   
+                    btnLic.style.display = 'flex';  
+                    btnRejText.innerText = '❌ رفض (نقص الوثائق)';
+                } else if (demande.statut === 'retour_urb_defavorable') {
+                    btnUrb.style.display = 'none';   
+                    btnLic.style.display = 'none';   
+                    btnRejText.innerText = '❌ تأكيد الرفض التقني وإشعار المواطن';
+                } else {
+                    btnRejText.innerText = '❌ رفض (نقص الوثائق)';
+                    
+                    if (typesUrbanisme.includes(demande.type_demande)) {
+                        btnUrb.style.display = 'flex';  
+                        btnLic.style.display = 'none';
+                    } else { 
+                        btnUrb.style.display = 'none';
+                        btnLic.style.display = 'flex';  
+                    }
+                }
+
+                document.getElementById('modalTraitement').style.display = 'block';
             }
         }
 
-        document.getElementById('modalTraitement').style.display = 'block';
-    }
-}
-
         function fermerModal() { document.getElementById('modalTraitement').style.display = 'none'; }
 
-        
-        // 🚀 الهندسة الجديدة للعرض: إنشاء نافذة العرض برمجياً لتجنب حظر المتصفحات
-function openViewer(url) {
-    const viewerContainer = document.getElementById('documentViewer');
-    const isPdf = url.toLowerCase().includes('.pdf');
+        // 🚀 الهندسة المستقرة للعرض لتجنب حظر المتصفحات
+        function openViewer(url) {
+            const viewerContainer = document.getElementById('documentViewer');
+            const viewerContent = document.getElementById('viewerContent');
+            const isPdf = url.toLowerCase().includes('.pdf');
 
-    // 1. تنظيف الحاوية ووضع زر الإغلاق
-    viewerContainer.innerHTML = '<span class="close-viewer" onclick="closeViewer()">&times;</span>';
+            viewerContent.innerHTML = ''; // تنظيف المحتوى السابق
 
-    // 2. إذا كان الملف PDF، نستخدم <object> (أقوى وأكثر استقراراً من iframe)
-    if (isPdf) {
-        viewerContainer.innerHTML += `
-            <object data="${url}" type="application/pdf" style="width: 85%; height: 90vh; margin: 2.5vh auto; display: block; border-radius: 12px; background: white; box-shadow: 0 0 30px rgba(0,0,0,0.5);">
-                <div style="text-align:center; padding-top:20%; color:white;">
-                    <h3>متصفحك لا يدعم العرض المباشر للـ PDF 😢</h3>
-                    <a href="${url}" target="_blank" style="color:#3498db; text-decoration:none; font-size:20px; font-weight:bold;">📥 اضغط هنا لفتح الملف أو تحميله</a>
-                </div>
-            </object>`;
-    } 
-    // 3. إذا كان صورة، نستخدم iframe أو img
-    else {
-        viewerContainer.innerHTML += `<iframe src="${url}" style="width: 85%; height: 90vh; margin: 2.5vh auto; display: block; border: none; border-radius: 12px; background: white; box-shadow: 0 0 30px rgba(0,0,0,0.5);"></iframe>`;
-    }
+            if (isPdf) {
+                viewerContent.innerHTML = `
+                    <object data="${url}" type="application/pdf" style="width: 85%; height: 90vh; margin: 2.5vh auto; display: block; border-radius: 12px; background: white; box-shadow: 0 0 30px rgba(0,0,0,0.5);">
+                        <div style="text-align:center; padding-top:20%; color:white;">
+                            <h3>متصفحك لا يدعم العرض المباشر للـ PDF 😢</h3>
+                            <a href="${url}" target="_blank" style="color:#3498db; text-decoration:none; font-size:20px; font-weight:bold;">📥 اضغط هنا لفتح الملف أو تحميله</a>
+                        </div>
+                    </object>`;
+            } else {
+                viewerContent.innerHTML = `<iframe src="${url}" style="width: 85%; height: 90vh; margin: 2.5vh auto; display: block; border: none; border-radius: 12px; background: white; box-shadow: 0 0 30px rgba(0,0,0,0.5);"></iframe>`;
+            }
 
-    viewerContainer.style.display = 'block';
-}
+            viewerContainer.style.display = 'block';
+        }
 
-function closeViewer() {
-    const viewerContainer = document.getElementById('documentViewer');
-    viewerContainer.style.display = 'none';
-    viewerContainer.innerHTML = ''; // 🧹 تنظيف الذاكرة لعدم تداخل الملفات
-}
-        
+        function closeViewer() {
+            const viewerContainer = document.getElementById('documentViewer');
+            const viewerContent = document.getElementById('viewerContent');
+            viewerContainer.style.display = 'none';
+            viewerContent.innerHTML = ''; // 🧹 تنظيف الذاكرة
+        }
 
         function openConfirm(nouveauStatut, btnElement) {
             pendingDecision = { statut: nouveauStatut, btn: btnElement };
@@ -439,10 +428,8 @@ function closeViewer() {
             pendingDecision = null;
         }
 
-        // 📱 دالة إنشاء رابط الواتساب حسب الدستور
-        // 📱 دالة الواتساب (نسخة محصنة ضد المسافات المخفية وانهيار الروابط)
+        // 📱 دالة الواتساب
         function genererLienWhatsApp(nom, cin, type, whatsapp, observations) {
-            // تنظيف الملاحظات من أي فراغات، وإذا كانت فارغة نضع النص الافتراضي
             const obsFinale = (observations && observations.trim() !== "") 
                 ? observations.trim() 
                 : "عدم استيفاء الشروط القانونية أو التقنية المطلوبة.";
@@ -455,7 +442,7 @@ function closeViewer() {
             return `https://wa.me/${numStr}?text=${encodeURIComponent(message)}`;
         }
 
-        // 🚀 تنفيذ القرار وتفعيل بروتوكول الواتساب
+        // 🚀 تنفيذ القرار (تم إضافة method: 'PUT' لتجنب خطأ الاتصال بالسيرفر)
         document.getElementById('btn-confirm-yes').onclick = async function() {
             if(!pendingDecision) return;
             const nouveauStatut = pendingDecision.statut;
@@ -472,7 +459,9 @@ function closeViewer() {
             btnElement.disabled = true;
 
             try {
-                    const response = await fetch(`/api/eco/demandes/${id}/traiter`, {
+                // 🔴 هذا هو التعديل החשוב الذي تم حقنه لضمان عبور الطلب
+                const response = await fetch(`/api/eco/demandes/${id}/traiter`, {
+                    method: 'PUT', 
                     headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ code_suivi: demande.code_suivi, nouveau_statut: nouveauStatut, observations: observations })
                 });
@@ -482,7 +471,6 @@ function closeViewer() {
                     
                     // 🟢 تفعيل بروتوكول الواتساب حصرياً في حالات الرفض (rejete)
                     if (nouveauStatut === 'rejete') {
-                        // نعطي الخادم ثانية واحدة ليستوعب التحديث، ثم نفتح واتساب
                         setTimeout(() => {
                             const waUrl = genererLienWhatsApp(demande.nom_complet, demande.cin, demande.type_demande, demande.numero_whatsapp, observations);
                             window.open(waUrl, '_blank');
@@ -518,43 +506,36 @@ function closeViewer() {
     
     // 2. دالة تشغيل صوت التنبيه وإظهار الإشعار المرئي
     function declencherAlerte(donnees, couleur) {
-        // تشغيل نغمة لطيفة (Beep)
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const oscillator = audioCtx.createOscillator();
         oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // نغمة عالية
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); 
         oscillator.connect(audioCtx.destination);
         oscillator.start();
         oscillator.stop(audioCtx.currentTime + 0.1);
 
-        // إظهار Toast مخصص
         const toast = document.getElementById("toast");
         toast.innerHTML = `🔔 <b>إشعار جديد:</b><br>${donnees.message}`;
         toast.style.backgroundColor = couleur;
         toast.className = "show";
         
-        // تحديث الجدول أوتوماتيكياً لرؤية الملف الجديد فوراً!
         if(typeof chargerDemandes === 'function') chargerDemandes();
 
         setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 6000);
     }
 
-    // 3. تحديد هوية هذه الواجهة لكي تستمع للإشعارات الخاصة بها فقط
+    // 3. الاستماع للإشعارات
     const pageActuelle = window.location.pathname;
 
     if (pageActuelle.includes('dashboard.html') && !pageActuelle.includes('urbanisme') && !pageActuelle.includes('licence') && !pageActuelle.includes('admin')) {
-        // إذا كنا في المكتب الاقتصادي، نستمع لنداءات المواطن والتعمير
-        socket.on('alerte_eco', (data) => declencherAlerte(data, '#f59e0b')); // لون برتقالي
+        socket.on('alerte_eco', (data) => declencherAlerte(data, '#f59e0b')); 
     } 
     else if (pageActuelle.includes('urbanisme_dashboard.html')) {
-        // إذا كنا في التعمير، نستمع لنداءات الاقتصاد
-        socket.on('alerte_urb', (data) => declencherAlerte(data, '#3b82f6')); // لون أزرق
+        socket.on('alerte_urb', (data) => declencherAlerte(data, '#3b82f6')); 
     } 
     else if (pageActuelle.includes('licence_dashboard.html')) {
-        // إذا كنا في الرخص، نستمع للملفات الجاهزة
-        socket.on('alerte_licence', (data) => declencherAlerte(data, '#10b981')); // لون أخضر
+        socket.on('alerte_licence', (data) => declencherAlerte(data, '#10b981')); 
     }
-    
 </script>
 </body>
-</html>     
+</html>
