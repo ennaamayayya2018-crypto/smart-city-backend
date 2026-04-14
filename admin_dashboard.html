@@ -229,6 +229,24 @@ th, td {
                     <button onclick="exportToExcel('table-finance-data', 'سجل_الخزينة_المالية')" class="btn-export-excel">📥 Excel</button>
                     <button onclick="exportToPDF('pdf-finance-container', 'سجل_الخزينة_المالية')" class="btn-export-pdf">📄 PDF</button>
                 </div>
+                <div class="table-container" style="padding: 0; margin-top: 30px; border: 2px solid var(--danger);">
+                <h3 style="padding: 15px; margin: 0; background: rgba(239, 68, 68, 0.1); color: var(--danger); border-bottom: 1px solid #334155;">
+                    🚨 لائحة المتأخرين عن الأداء (الديون المستحقة)
+                </h3>
+                <table id="table-impayes-data">
+                    <thead>
+                        <tr>
+                            <th>رقم التتبع</th>
+                            <th>المواطن</th>
+                            <th>النشاط</th>
+                            <th>الدورات غير المؤداة</th>
+                            <th>الديون المتراكمة</th>
+                            <th>إرسال إنذار</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-impayes"></tbody>
+                </table>
+            </div>
             </div>
             <div class="table-container" id="pdf-finance-container" style="padding: 0;">
                 <h3 style="padding: 15px; margin: 0; color: #10b981; border-bottom: 1px solid #334155;">سجل الاستخلاصات المالية (مفصل)</h3>
@@ -478,7 +496,10 @@ th, td {
             document.getElementById('page-title').innerText = titles[tabId];
 
             if(tabId === 'tab-dashboard') fetchStats();
-            if(tabId === 'tab-finance') fetchFinance();
+            if(tabId === 'tab-finance') {
+                fetchFinance();
+                fetchImpayes(); // 👈 تمت الإضافة هنا لتحديث الديون
+            }
             if(tabId === 'tab-demandes') fetchDemandes();
             if(tabId === 'tab-utilisateurs') fetchUsers();
             if(tabId === 'tab-audit') fetchAudit();
@@ -908,6 +929,48 @@ th, td {
         }
 
         function deconnexion() { localStorage.clear(); window.location.href = 'login.html'; }
+
+        // 🚨 دالة جلب وعرض الديون المتراكمة
+        async function fetchImpayes() {
+            const data = await fetchAdminData('impayes');
+            const tbody = document.getElementById('tbody-impayes');
+            tbody.innerHTML = '';
+            
+            if(data && data.impayes.length > 0) {
+                data.impayes.forEach(d => {
+                    // دالة تكوين رابط الواتساب الجاهز
+                    const waLink = genererAvertissementWhatsApp(d.nom_complet, d.whatsapp, d.code_suivi, d.type_demande, d.montant_dette, d.trimestres_retard);
+                    
+                    tbody.innerHTML += `
+                        <tr style="background: rgba(239, 68, 68, 0.05);">
+                            <td><strong style="color:var(--accent);">${d.code_suivi}</strong></td>
+                            <td>${d.nom_complet}</td>
+                            <td>${d.type_demande}</td>
+                            <td dir="ltr" style="color:#fca5a5; font-size:12px; font-weight:bold;">${d.trimestres_retard}</td>
+                            <td><strong style="color:var(--danger); font-size:16px;">${Number(d.montant_dette).toLocaleString('ar-MA')} درهم</strong></td>
+                            <td>
+                                <a href="${waLink}" target="_blank" style="background:#25D366; color:white; padding:8px 15px; border-radius:6px; text-decoration:none; font-weight:bold; font-size:13px; display:inline-block; transition:0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                    💬 إرسال إنذار
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:#10b981; font-weight:bold;">🎉 لا توجد أي ديون أو تأخيرات مسجلة! جميع المواطنين في وضعية قانونية.</td></tr>`;
+            }
+        }
+
+        // 💬 دالة توليد رسالة الإنذار الرسمية
+        function genererAvertissementWhatsApp(nom, whatsapp, code_suivi, type, dette, periodes) {
+            let numStr = String(whatsapp || '').trim();
+            if (!numStr) return '#'; // إذا لم يكن هناك رقم
+            if (numStr.startsWith('0')) numStr = '212' + numStr.substring(1);
+
+            const message = `*إشعار رسمي من المكتب الاقتصادي - جماعة العيون*\n\nمرحباً السيد(ة) *${nom}*،\n\nنود إشعاركم بأن هناك متأخرات مالية بذمتكم متعلقة باستغلال الملك العمومي (رخصة: ${type}).\n\n🔹 *رقم الملف:* ${code_suivi}\n🔹 *الدورات غير المؤداة:* ${periodes}\n🔻 *المبلغ الإجمالي المستحق:* ${Number(dette).toLocaleString('ar-MA')} درهم.\n\nالمرجو تسوية وضعيتكم المالية في أقرب وقت ممكن لتفادي أي غرامات إضافية أو سحب للرخصة.\n\nنشكركم على تفهمكم.`;
+            
+            return `https://wa.me/${numStr}?text=${encodeURIComponent(message)}`;
+        }
 
         fetchSLA(); fetchStats();
     </script>

@@ -115,5 +115,85 @@ const getRecouvrements = async (req, res) => {
         res.status(500).json({ message: 'حدث خطأ أثناء جلب السجل المالي.' });
     }
 };
+// 🚨 10. محرك رصد التأخيرات المالية والديون (الإنذارات)
+const getImpayes = async (req, res) => {
+    try {
+        // جلب جميع الملفات المرخصة مع تفاصيل آخر دفعة مالية قاموا بها
+        const query = `
+            SELECT 
+                d.code_suivi, d.nom_complet, d.cin, d.numero_whatsapp, d.type_demande,
+                (SELECT periodes_payees FROM recouvrements r WHERE r.code_suivi = d.code_suivi ORDER BY date_paiement DESC LIMIT 1) as dernieres_periodes,
+                (SELECT montant_unitaire FROM recouvrements r WHERE r.code_suivi = d.code_suivi ORDER BY date_paiement DESC LIMIT 1) as montant_base
+            FROM demandes d
+            WHERE d.statut = 'autorise';
+        `;
+        const result = await db.query(query);
 
-module.exports = { getStatistiques, getAllDemandes, getAllUsers, getAuditTrail, getChartData, getFichiersEnRetard, getArchiveDefinitif, supprimerUtilisateur, getRecouvrements };
+        // تحديد السنة والدورة الحالية
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentQ = Math.ceil((now.getMonth() + 1) / 3); 
+
+        let debteurs = [];
+
+        result.rows.forEach(row => {
+            if (!row.dernieres_periodes) return; 
+
+            let periodes = [];
+            try {
+                periodes = typeof row.dernieres_periodes === 'string' ? JSON.parse(row.dernieres_periodes) : row.dernieres_periodes;
+            } catch(e) {}
+
+            if (!periodes || periodes.length === 0) return;
+
+            // استخراج أحدث دورة قام المواطن بأدائها
+            let maxYear = 0;
+            let maxQ = 0;
+            periodes.forEach(p => {
+                const parts = p.split('-Q');
+                if (parts.length === 2) {
+                    const y = parseInt(parts[0]);
+                    const q = parseInt(parts[1]);
+                    if (y > maxYear || (y === maxYear && q > maxQ)) {
+                        maxYear = y; maxQ = q;
+                    }
+                }
+            });
+
+            // حساب الدورات غير المؤداة (من الدورة التي تلي آخر دفعة وصولاً للدورة الحالية)
+            let missedQuarters = [];
+            let y = maxYear;
+            let q = maxQ + 1;
+            if (q > 4) { y++; q = 1; }
+
+            // إذا كانت الدورة المطلوبة أصغر من أو تساوي الدورة الحالية، فهو في حالة تأخير
+            while (y < currentYear || (y === currentYear && q <= currentQ)) {
+                missedQuarters.push(`${y}-Q${q}`);
+                q++;
+                if (q > 4) { y++; q = 1; }
+            }
+
+            // إذا كان هناك ديون، أضفه للقائمة
+            if (missedQuarters.length > 0) {
+                const dette = missedQuarters.length * (row.montant_base || 0);
+                debteurs.push({
+                    code_suivi: row.code_suivi,
+                    nom_complet: row.nom_complet,
+                    cin: row.cin,
+                    whatsapp: row.numero_whatsapp,
+                    type_demande: row.type_demande,
+                    trimestres_retard: missedQuarters.join('، '),
+                    nombre_trimestres: missedQuarters.length,
+                    montant_dette: dette
+                });
+            }
+        });
+
+        res.status(200).json({ impayes: debteurs });
+    } catch (error) {
+        console.error('Error fetching impayes:', error);
+        res.status(500).json({ message: 'حدث خطأ أثناء حساب الديون.' });
+    }
+};
+
+module.exports = { getStatistiques, getAllDemandes, getAllUsers, getAuditTrail, getChartData, getFichiersEnRetard, getArchiveDefinitif, supprimerUtilisateur, getRecouvrements, getImpayes };

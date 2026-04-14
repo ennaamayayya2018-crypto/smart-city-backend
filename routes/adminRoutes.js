@@ -16,5 +16,6 @@ router.delete('/utilisateurs/:id', adminController.supprimerUtilisateur);
 
 // 💰 المسار الجديد الخاص بالخزينة
 router.get('/recouvrements', adminController.getRecouvrements);
-
+// 🚨 مسار جلب الديون والإنذارات
+router.get('/impayes', adminController.getImpayes);
 module.exports = router;
