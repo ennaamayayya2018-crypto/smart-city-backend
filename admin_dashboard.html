@@ -219,9 +219,9 @@
                         <tr>
                             <th>التاريخ</th>
                             <th>رقم التتبع</th>
-                            <th>المواطن</th>
+                            <th>الاسم الكامل</th>
                             <th>رقم البطاقة (CIN) </th>
-                            <th>العنوان</th> <th>نوع الاستغلال</th>
+                            <th>العنوان</th> <th>نوع الاستغلال</th> <th>نوع النشاط</th>
                             <th>رقم الوصل</th>
                             <th>الدورات</th>
                             <th>المبلغ</th>
@@ -483,6 +483,7 @@
 
 
         // 💰 1. جلب بيانات الخزينة
+      // 💰 1. جلب بيانات الخزينة
         async function fetchFinance() {
             const data = await fetchAdminData('recouvrements');
             const tbody = document.getElementById('tbody-finance');
@@ -501,9 +502,10 @@
                         ? `<button onclick="openNormalViewer('${r.doc_paiement_pdf}')" style="background:#10b981; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">👁️ الوصل</button>`
                         : '-';
 
-                    // 🌟 تجهيز حقول البطاقة والعنوان وتفادي القيم الفارغة
+                    // معالجة الحقول الفارغة
                     const cin = r.cin ? r.cin : '<span style="color:#64748b;font-size:11px;">غير مسجل</span>';
                     const adresse = r.adresse ? r.adresse : '<span style="color:#64748b;font-size:11px;">غير مسجل</span>';
+                    const activite = r.type_activite ? r.type_activite : '<span style="color:#64748b;font-size:11px;">---</span>';
 
                     tbody.innerHTML += `
                         <tr>
@@ -513,7 +515,7 @@
                             <td><strong style="color:#cbd5e1;">${cin}</strong></td>
                             <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${r.adresse || ''}">${adresse}</td>
                             <td>${r.type_demande}</td>
-                            <td style="color:#cbd5e1;">${r.num_quittance}</td>
+                            <td><strong style="color:#fcd34d;">${activite}</strong></td> <td style="color:#cbd5e1;">${r.num_quittance}</td>
                             <td dir="ltr" style="color:#64748b; font-size:12px;">${periodesStr}</td>
                             <td><strong style="color:#34d399;">${Number(r.montant_total_paye).toLocaleString('ar-MA')} درهم</strong></td>
                             <td>${docBtn}</td>
@@ -521,10 +523,9 @@
                     `;
                 });
             } else {
-                tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:30px; color:#94a3b8;">لا توجد استخلاصات مالية مسجلة.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding:30px; color:#94a3b8;">لا توجد استخلاصات مالية مسجلة.</td></tr>`;
             }
         }
-
         // 🚨 2. جلب التأخيرات
         async function fetchSLA() {
             const data = await fetchAdminData('retards');
