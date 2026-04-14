@@ -571,7 +571,8 @@
         }
 
         // ⚙️ دوال المعالجة والقرار بالكامل
-function ouvrirModal(id) {
+// ⚙️ دوال المعالجة والقرار بالكامل
+        function ouvrirModal(id) {
             const demande = listeDemandes.find(d => d.id === id);
             
             if(demande) {
@@ -643,6 +644,7 @@ function ouvrirModal(id) {
                 const btnLic = document.getElementById('btn-lic');
                 const btnRejText = document.querySelector('.btn-reject span');
                 const uploadPvSection = document.getElementById('pv-upload-section');
+                
                 const typesUrbanisme = ['رصيف مغطى', 'رصيف غير مغطى', 'عمود إشهاري'];
 
                 // إظهار منطقة الرفع دائماً لجميع الملفات وفي جميع المراحل (للرفض أو القبول)
@@ -669,85 +671,9 @@ function ouvrirModal(id) {
 
                 document.getElementById('modalTraitement').style.display = 'block';
             }
-        }            const demande = listeDemandes.find(d => d.id === id);
-            
-            if(demande) {
-                document.getElementById('m-nom').innerText = demande.nom_complet;
-                document.getElementById('m-cin').innerText = demande.cin;
-                document.getElementById('m-whatsapp').innerText = demande.numero_whatsapp;
-                document.getElementById('m-type').innerText = demande.type_demande;
-                document.getElementById('m-id-demande').value = demande.id; 
-                document.getElementById('m-observations').value = demande.observations || '';
-                
-                document.getElementById('m-pv-constat').value = '';
-                document.getElementById('m-pv-recouvrement').value = '';
-                document.getElementById('filename-constat').innerText = 'لم يتم اختيار ملف';
-                document.getElementById('filename-recouv').innerText = 'لم يتم اختيار ملف';
-                
-                const docBox = document.getElementById('m-documents');
-                docBox.innerHTML = '';
-                let hasDocs = false;
-
-                for (let i = 1; i <= 4; i++) {
-                   const docPath = demande[`document_${i}`];
-                   if (docPath) {
-                       hasDocs = true;
-                       let fileUrl = docPath.startsWith('http') ? docPath : `https://rokhsa-laayoune.onrender.com/uploads/${docPath.replace(/\\/g, '/').split('/').pop()}`;
-                       const isPdf = fileUrl.toLowerCase().includes('.pdf');
-                       const icon = isPdf ? '📄' : '🖼️';
-        
-                       docBox.innerHTML += `
-                       <div class="doc-card">
-                           <div class="doc-icon" onclick="openViewer('${fileUrl}')" title="انقر للمعاينة">${icon}</div>
-                           <div style="font-weight: bold; color: #334155; font-size: 14px;">وثيقة المرفق ${i}</div>
-                           <div class="doc-actions">
-                               <button class="doc-btn btn-view" onclick="openViewer('${fileUrl}')">👁️ معاينة</button>
-                               <a href="${fileUrl}" target="_blank" download class="doc-btn btn-down">📥 تحميل</a>
-                           </div>
-                       </div>`;
-                  }
-                }
-
-                if (!hasDocs) docBox.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #94a3b8; padding: 40px; border: 2px dashed #cbd5e1; border-radius: 10px;">لا توجد وثائق مرفقة مع هذا الملف 📁</div>';
-
-                const btnUrb = document.getElementById('btn-urb');
-                const btnLic = document.getElementById('btn-lic');
-                const btnRejText = document.querySelector('.btn-reject span');
-                const uploadPvSection = document.getElementById('pv-upload-section');
-                
-                const typesUrbanisme = ['رصيف مغطى', 'رصيف غير مغطى', 'عمود إشهاري'];
-
-                let isApresUrbanisme = (demande.statut === 'retour_urb_favorable');
-                let isDirectLicence = (!typesUrbanisme.includes(demande.type_demande)); 
-
-                if (isApresUrbanisme || isDirectLicence) {
-                    uploadPvSection.style.display = 'flex';
-                } else {
-                    uploadPvSection.style.display = 'none';
-                }
-
-                if (demande.statut === 'retour_urb_favorable') {
-                    btnUrb.style.display = 'none';   
-                    btnLic.style.display = 'flex';  
-                    btnRejText.innerText = '❌ رفض (نقص الوثائق)';
-                } else if (demande.statut === 'retour_urb_defavorable') {
-                    btnUrb.style.display = 'none';   
-                    btnLic.style.display = 'none';   
-                    btnRejText.innerText = '❌ تأكيد الرفض التقني';
-                } else {
-                    btnRejText.innerText = '❌ رفض (نقص الوثائق)';
-                    if (typesUrbanisme.includes(demande.type_demande)) {
-                        btnUrb.style.display = 'flex';  
-                        btnLic.style.display = 'none';
-                    } else { 
-                        btnUrb.style.display = 'none';
-                        btnLic.style.display = 'flex';  
-                    }
-                }
-
-                document.getElementById('modalTraitement').style.display = 'block';
-            }
         }
+
+        function fermerModal() { document.getElementById('modalTraitement').style.display = 'none'; }
 
         function fermerModal() { document.getElementById('modalTraitement').style.display = 'none'; }
 
