@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بوابة الإدارة العليا - برج المراقبة</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -9,28 +10,34 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
+        /* 🌟 المتغيرات والنسق الداكن */
         :root { --primary: #1e293b; --secondary: #334155; --accent: #3b82f6; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --bg: #0f172a; --text: #f8fafc; --card-bg: #1e293b; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
+        /* 🌟 الشريط الجانبي */
         .sidebar { width: 260px; background: var(--card-bg); border-left: 1px solid #334155; display: flex; flex-direction: column; padding: 20px 0; box-shadow: -5px 0 15px rgba(0,0,0,0.5); z-index: 10; }
         .sidebar-header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid #334155; margin-bottom: 20px; }
         .sidebar-header h2 { margin: 0; color: var(--accent); font-size: 22px; }
+        .sidebar-header p { margin: 5px 0 0; font-size: 12px; color: #94a3b8; }
         
-        .nav-menu { display: flex; flex-direction: column; gap: 5px; padding: 0 15px; flex: 1; overflow-y: auto; }
+        .nav-menu { display: flex; flex-direction: column; gap: 5px; padding: 0 15px; flex: 1; overflow-y: auto;}
         .nav-item { padding: 15px 20px; border-radius: 10px; cursor: pointer; color: #cbd5e1; font-weight: bold; transition: 0.3s; display: flex; align-items: center; gap: 10px; border: 1px solid transparent; }
         .nav-item:hover { background: rgba(59, 130, 246, 0.1); color: white; }
         .nav-item.active { background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
         .nav-item.finance { color: #34d399; }
-        .nav-item.finance:hover { background: rgba(16, 185, 129, 0.1); }
+        .nav-item.finance:hover { background: rgba(16, 185, 129, 0.1); color: white;}
         .nav-item.finance.active { background: var(--success); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); color: white;}
         .nav-item.alert { border-color: rgba(239, 68, 68, 0.5); color: #fca5a5; }
+        .nav-item.alert:hover { background: rgba(239, 68, 68, 0.1); color: white; }
         
         .logout-btn { margin: 20px 15px; padding: 15px; background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        
+        .logout-btn:hover { background: var(--danger); color: white; }
+
+        /* 🌟 منطقة المحتوى */
         .main-content { flex: 1; padding: 30px; overflow-y: auto; background: linear-gradient(135deg, #0f172a, #1e293b); }
         .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #334155; padding-bottom: 15px; }
         
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .kpi-card { background: var(--card-bg); padding: 25px; border-radius: 15px; border: 1px solid #334155; box-shadow: 0 10px 20px rgba(0,0,0,0.2); position: relative; overflow: hidden; }
         .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent); }
         .kpi-card.success::before { background: var(--success); }
@@ -40,7 +47,8 @@
         .kpi-card.finance::before { background: #10b981; width: 6px; }
         .kpi-title { color: #94a3b8; font-size: 14px; margin-bottom: 10px; font-weight: bold; }
         .kpi-card.finance .kpi-title { color: #a7f3d0; }
-        .kpi-value { font-size: 32px; font-weight: 900; color: white; margin: 0; }
+        .kpi-value { font-size: 36px; font-weight: 900; color: white; margin: 0; }
+        .kpi-card.finance .kpi-value { font-size: 42px; color: #34d399; }
 
         .tab-content { display: none; animation: fadeIn 0.4s ease; }
         .tab-content.active { display: block; }
@@ -48,23 +56,69 @@
         
         .table-container { background: var(--card-bg); border-radius: 15px; border: 1px solid #334155; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.2); margin-bottom: 20px; padding: 20px; }
         table { width: 100%; border-collapse: collapse; text-align: right; }
-        th, td { padding: 15px 20px; border-bottom: 1px solid #334155; font-size: 14px;}
+        th, td { padding: 15px 20px; border-bottom: 1px solid #334155; }
         th { background: rgba(0,0,0,0.2); color: #94a3b8; font-size: 13px; text-transform: uppercase; }
         tr:hover { background: rgba(255,255,255,0.02); }
         
-        .charts-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 20px;}
+        .hr-grid { display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
+        .form-control { width: 100%; padding: 12px; margin-top: 8px; margin-bottom: 15px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; box-sizing: border-box; }
+        .form-control:focus { outline: none; border-color: var(--accent); }
+        .btn-submit { background: var(--accent); color: white; width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-submit:hover { background: #2563eb; }
+
+        /* 🌟 أزرار التصدير (Export Buttons) */
+        .export-actions { display: flex; gap: 10px; margin-bottom: 15px; justify-content: flex-end; }
+        .btn-export-excel { background: #10b981; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.3s; }
+        .btn-export-excel:hover { background: #059669; }
+        .btn-export-pdf { background: #ef4444; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.3s; }
+        .btn-export-pdf:hover { background: #dc2626; }
+
+        .charts-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 20px; }
         .chart-box { background: var(--card-bg); padding: 20px; border-radius: 15px; border: 1px solid #334155; }
         
-        .export-actions { display: flex; gap: 10px; margin-bottom: 15px; justify-content: flex-end; }
-        .btn-export-excel { background: #10b981; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-export-pdf { background: #ef4444; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .badge { padding: 6px 12px; border-radius: 50px; font-size: 12px; font-weight: bold; display: inline-block; }
+        .bg-eco { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid #f59e0b; }
+        .bg-urb { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid #3b82f6; }
+        .bg-lic { background: rgba(168, 85, 247, 0.2); color: #d8b4fe; border: 1px solid #a855f7; }
+        .bg-success { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid #10b981; }
+        .bg-danger { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid #ef4444; }
+
+        /* نبض أحمر للملفات المتأخرة */
+        .pulse-danger { animation: pulseRed 2s infinite; }
+        @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
 
         #toast { visibility: hidden; min-width: 250px; background-color: var(--danger); color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 10000; bottom: 30px; left: 50%; transform: translateX(-50%); font-weight: bold; transition: 0.4s; opacity: 0; }
         #toast.show { visibility: visible; bottom: 50px; opacity: 1; }
+        
+        /* 🌟 1. تصميم النافذة لتتمركز في منتصف الشاشة */
+        .modal { display: none; position: fixed; z-index: 10005; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.85); backdrop-filter: blur(5px); }
+        .modal-content { background-color: var(--card-bg); margin: 4vh auto; border-radius: 16px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; animation: zoomIn 0.3s ease-out; border: 1px solid #334155; color: var(--text); width: 85%; max-width: 1000px; height: auto; max-height: 92vh; position: relative; }
+        @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .modal-header { padding: 20px 30px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; background: #0f172a; }
+        .close-btn { color: #94a3b8; font-size: 32px; cursor: pointer; transition: 0.2s; font-weight: bold; line-height: 1; padding-bottom: 5px; }
+        .close-btn:hover { color: var(--danger); transform: scale(1.1); }
 
-        #documentViewer { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(8px); }
+        /* 🌟 2. زر المجلد الأنيق في الجدول */
+        .btn-folder { background: rgba(59, 130, 246, 0.1); border: 1px solid var(--accent); color: var(--accent); padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; white-space: nowrap; }
+        .btn-folder:hover { background: var(--accent); color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); }
+
+        /* 🎬 3. تصميم العارض السينمائي (Carousel Viewer) */
+        .viewer-container { position: relative; width: 100%; height: 60vh; background: #0f172a; border-radius: 12px; border: 1px solid #334155; overflow: hidden; display: flex; justify-content: center; align-items: center; margin-top: 10px; }
+        .viewer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 10px; }
+        .doc-current-title { color: var(--accent); font-weight: bold; font-size: 18px; margin: 0; }
+        .btn-mini-dl { background: var(--success); color: white; padding: 8px 15px; border-radius: 6px; font-size: 13px; font-weight: bold; text-decoration: none; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; border: none; }
+        .btn-mini-dl:hover { background: #059669; transform: translateY(-2px); }
+        
+        /* ⬅️ ➡️ أسهم التنقل المدمجة */
+        .nav-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(15, 23, 42, 0.8); color: white; border: 2px solid #334155; width: 50px; height: 50px; border-radius: 50%; font-size: 22px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.3s; z-index: 10; backdrop-filter: blur(4px); }
+        .nav-arrow:hover { background: var(--accent); border-color: var(--accent); scale: 1.1; }
+        .nav-arrow:disabled { opacity: 0.2; cursor: not-allowed; background: rgba(15, 23, 42, 0.5); border-color: transparent; }
+        .arrow-right { right: 20px; }
+        .arrow-left { left: 20px; }
+        
+        #documentViewer { display: none; position: fixed; z-index: 99999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(8px); }
         #viewerFrame { width: 85%; height: 90vh; margin: 2.5vh auto; display: block; border: none; border-radius: 12px; background: white; }
-        .close-viewer { position: absolute; top: 20px; left: 30px; color: white; font-size: 40px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -73,14 +127,17 @@
 
     <div class="sidebar">
         <div class="sidebar-header">
-            <h2>الإدارة العليا</h2>
+            <h2> الإدارة العليا</h2>
+            <p>برج المراقبة</p>
         </div>
         
         <div class="nav-menu">
             <div class="nav-item active" onclick="switchTab('tab-dashboard', this)">📊 لوحة القيادة</div>
             <div class="nav-item finance" onclick="switchTab('tab-finance', this)">💰 الخزينة والمداخيل</div>
+            <div class="nav-item alert pulse-danger" onclick="switchTab('tab-sla', this)">
+                ⏱️ التأخيرات <span id="badge-retards" style="background: var(--danger); color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; margin-right: auto;">0</span>
+            </div>
             <div class="nav-item" onclick="switchTab('tab-charts', this)">📈 التقارير والمبيانات</div>
-            <div class="nav-item alert" onclick="switchTab('tab-sla', this)">⏱️ التأخيرات <span id="badge-retards" style="background: var(--danger); color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; margin-right: auto;">0</span></div>
             <div class="nav-item" onclick="switchTab('tab-demandes', this)">🗂️ الأرشيف الشامل</div>
             <div class="nav-item" onclick="switchTab('tab-utilisateurs', this)">👥 الموارد البشرية</div>
             <div class="nav-item" onclick="switchTab('tab-audit', this)">🕵️‍♂️ سجل الحركات</div>
@@ -100,16 +157,16 @@
                 <div class="kpi-card finance" style="grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <div class="kpi-title">إجمالي المداخيل المحصلة (الخزينة)</div>
-                        <div class="kpi-value" id="stat-revenus" style="color: #34d399; font-size: 42px;">0.00 درهم</div>
+                        <div class="kpi-value" id="stat-revenus">0.00 درهم</div>
                     </div>
                     <div style="font-size: 50px; opacity: 0.5;">💰</div>
                 </div>
                 <div class="kpi-card">
-                    <div class="kpi-title">إجمالي الطلبات</div>
+                    <div class="kpi-title">إجمالي الطلبات المستلمة</div>
                     <div class="kpi-value" id="stat-total">0</div>
                 </div>
                 <div class="kpi-card warning">
-                    <div class="kpi-title">قيد المعالجة</div>
+                    <div class="kpi-title">ملفات قيد المعالجة</div>
                     <div class="kpi-value" style="color: var(--warning);" id="stat-encours">0</div>
                 </div>
                 <div class="kpi-card success">
@@ -117,7 +174,7 @@
                     <div class="kpi-value" style="color: var(--success);" id="stat-autorise">0</div>
                 </div>
                 <div class="kpi-card danger">
-                    <div class="kpi-title">مرفوضة نهائياً</div>
+                    <div class="kpi-title">ملفات مرفوضة نهائياً</div>
                     <div class="kpi-value" style="color: var(--danger);" id="stat-rejete">0</div>
                 </div>
             </div>
@@ -138,8 +195,8 @@
                             <th>المواطن</th>
                             <th>النشاط</th>
                             <th>رقم الوصل</th>
-                            <th>الدورات المؤداة</th>
-                            <th>المبلغ المحصل</th>
+                            <th>الدورات</th>
+                            <th>المبلغ</th>
                             <th>وثيقة الأداء</th>
                         </tr>
                     </thead>
@@ -148,15 +205,42 @@
             </div>
         </div>
 
+        <div id="tab-sla" class="tab-content">
+            <div style="background: rgba(239, 68, 68, 0.1); border-right: 4px solid var(--danger); padding: 15px; border-radius: 8px; margin-bottom: 20px; color: #fca5a5;">
+                <strong>⚠️ انتباه:</strong> هذه الملفات تجاوزت المدة القانونية للمعالجة (أكثر من 3 أيام) ولم يتم اتخاذ قرار نهائي بشأنها.
+            </div>
+            
+            <div class="export-actions">
+                <button onclick="exportToExcel('table-sla-data', 'تقرير_الملفات_المتأخرة')" class="btn-export-excel">📥 تصدير Excel</button>
+                <button onclick="exportToPDF('pdf-sla-container', 'تقرير_الملفات_المتأخرة')" class="btn-export-pdf">📄 تصدير PDF</button>
+            </div>
+
+            <div class="table-container" id="pdf-sla-container" style="padding: 0;">
+                <h3 style="padding: 15px; margin: 0; color: var(--danger); border-bottom: 1px solid #334155;">قائمة الملفات المتأخرة (SLA Alert)</h3>
+                <table id="table-sla-data">
+                    <thead>
+                        <tr>
+                            <th>رقم التتبع</th>
+                            <th>المواطن</th>
+                            <th>نوع الطلب</th>
+                            <th>أيام التأخير</th>
+                            <th>عالقة في مصلحة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-sla"></tbody>
+                </table>
+            </div>
+        </div>
+
         <div id="tab-charts" class="tab-content">
             <h2 style="color: #10b981; margin-top: 0; margin-bottom: 15px;">📊 المؤشرات المالية</h2>
             <div class="charts-grid">
                 <div class="chart-box">
-                    <h3 style="margin-top:0; color: #10b981;">المداخيل حسب النشاط</h3>
+                    <h3 style="margin-top:0; color: #10b981; border-bottom: 1px solid #334155; padding-bottom: 10px;">المداخيل حسب النشاط</h3>
                     <canvas id="revPieChart"></canvas>
                 </div>
                 <div class="chart-box">
-                    <h3 style="margin-top:0; color: #34d399;">التطور الشهري للمداخيل (درهم)</h3>
+                    <h3 style="margin-top:0; color: #34d399; border-bottom: 1px solid #334155; padding-bottom: 10px;">التطور الشهري للمداخيل (درهم)</h3>
                     <canvas id="revBarChart"></canvas>
                 </div>
             </div>
@@ -164,24 +248,127 @@
             <h2 style="color: var(--accent); margin-top: 30px; margin-bottom: 15px;">📂 المؤشرات الإدارية (الطلبات)</h2>
             <div class="charts-grid">
                 <div class="chart-box">
-                    <h3 style="margin-top:0; color: var(--accent);">نسبة أنواع الطلبات</h3>
+                    <h3 style="margin-top:0; color: var(--accent); border-bottom: 1px solid #334155; padding-bottom: 10px;">نسبة أنواع الطلبات</h3>
                     <canvas id="reqPieChart"></canvas>
                 </div>
                 <div class="chart-box">
-                    <h3 style="margin-top:0; color: #60a5fa;">كثافة الطلبات حسب الأشهر</h3>
+                    <h3 style="margin-top:0; color: #60a5fa; border-bottom: 1px solid #334155; padding-bottom: 10px;">كثافة الطلبات حسب الأشهر</h3>
                     <canvas id="reqBarChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <div id="tab-sla" class="tab-content"><div class="table-container" style="padding: 0;"><table id="table-sla-data"><thead><tr><th>رقم التتبع</th><th>المواطن</th><th>نوع الطلب</th><th>التأخير</th><th>المصلحة</th></tr></thead><tbody id="tbody-sla"></tbody></table></div></div>
-        
-        <div id="tab-demandes" class="tab-content"><div class="table-container" style="padding: 0;"><table id="table-demandes-data"><thead><tr><th>رقم التتبع</th><th>المواطن</th><th>الطلب</th><th>القرار</th></tr></thead><tbody id="tbody-demandes"></tbody></table></div></div>
-        
-        <div id="tab-utilisateurs" class="tab-content"><div class="table-container" style="padding: 0;"><table><thead><tr><th>الاسم</th><th>البريد</th><th>الدور</th></tr></thead><tbody id="tbody-utilisateurs"></tbody></table></div></div>
-        
-        <div id="tab-audit" class="tab-content"><div class="table-container" style="padding: 0;"><table id="table-audit-data"><thead><tr><th>التاريخ</th><th>الموظف</th><th>رقم الملف</th><th>الإجراء</th></tr></thead><tbody id="tbody-audit"></tbody></table></div></div>
+        <div id="tab-demandes" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid #334155;">
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-filter active" onclick="filtrerParStatut('tous', this)" style="background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">📂 الكل</button>
+                    <button class="btn-filter" onclick="filtrerParStatut('autorise', this)" style="background: transparent; color: #6ee7b7; border: 1px solid #10b981; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">✅ تراخيص مُسلمة</button>
+                    <button class="btn-filter" onclick="filtrerParStatut('rejete', this)" style="background: transparent; color: #fca5a5; border: 1px solid #ef4444; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">❌ ملفات مرفوضة</button>
+                </div>
+                <div style="flex: 1; min-width: 250px; max-width: 400px;">
+                    <input type="text" id="searchInput" onkeyup="rechercherArchive()" placeholder="🔍 بحث بالاسم، رقم البطاقة (CIN)، أو رقم التتبع..." style="width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-family: inherit; box-sizing: border-box;">
+                </div>
+                <div class="export-actions" style="margin: 0;">
+                    <button onclick="exportToExcel('table-demandes-data', 'الارشيف_النهائي')" class="btn-export-excel">📥 Excel</button>
+                    <button onclick="exportToPDF('pdf-demandes-container', 'الارشيف_النهائي')" class="btn-export-pdf">📄 PDF</button>
+                </div>
+            </div>
 
+            <div class="table-container" id="pdf-demandes-container" style="padding: 0;">
+                <table id="table-demandes-data">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>رقم التتبع</th>
+                            <th>المواطن</th>
+                            <th>رقم البطاقة (CIN)</th>
+                            <th>الطلب</th>
+                            <th>تاريخ الإيداع</th>
+                            <th>القرار النهائي</th>
+                            <th>المرفقات والوثائق 📂</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-demandes"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tab-utilisateurs" class="tab-content">
+            <div class="hr-grid">
+                <div class="table-container" style="padding: 0; align-self: start;">
+                    <table>
+                        <thead><tr><th>الاسم الكامل</th><th>البريد الإلكتروني</th><th>الصلاحية</th></tr></thead>
+                        <tbody id="tbody-utilisateurs"></tbody>
+                    </table>
+                </div>
+                <div class="chart-box">
+                    <h3 style="margin-top:0; color: var(--success); text-align:center;">إضافة موظف جديد 🛡️</h3>
+                    <form id="registerForm" onsubmit="soumettreNouvelEmploye(event)">
+                        <input type="text" id="nom_complet" class="form-control" required placeholder="الاسم الكامل">
+                        <input type="email" id="email" class="form-control" required placeholder="البريد الإلكتروني" dir="ltr">
+                        <input type="password" id="mot_de_passe" class="form-control" required placeholder="كلمة السر" dir="ltr">
+                        <select id="role" class="form-control" required>
+                            <option value="" disabled selected>-- حدد الصلاحية --</option>
+                            <option value="admin">⭐ مدير النظام</option>
+                            <option value="eco">💼 المكتب الاقتصادي</option>
+                            <option value="urbanisme">📐 مصلحة التعمير</option>
+                            <option value="licence">📜 مصلحة الرخص</option>
+                            <option value="licence+eco">💼📜 مسؤول مزدوج</option>
+                        </select>
+                        <button type="submit" id="btn-add-user" class="btn-submit">إنشاء الحساب وتشفير البيانات 🔒</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-audit" class="tab-content">
+            <div class="export-actions">
+                <button onclick="exportToExcel('table-audit-data', 'سجل_الحركات')" class="btn-export-excel">📥 تصدير Excel</button>
+            </div>
+            <div class="table-container" style="padding: 0;">
+                <table id="table-audit-data">
+                    <thead><tr><th>التاريخ والوقت</th><th>الموظف المسؤول</th><th>رقم الملف</th><th>الإجراء المتخذ</th><th>الملاحظات</th></tr></thead>
+                    <tbody id="tbody-audit"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="modalDossier" class="modal" style="z-index: 10005;">
+        <div class="modal-content" style="width: 80%; max-width: 1000px; height: auto; max-height: 90vh;">
+            <div class="modal-header">
+                <h3 style="margin: 0; color: var(--accent);">📂 تصفح الملف: <span id="md-code" style="color: white;"></span></h3>
+                <span class="close-btn" onclick="document.getElementById('modalDossier').style.display='none'">&times;</span>
+            </div>
+            
+            <div class="modal-body" style="padding: 20px; overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; gap: 15px;">
+                
+                <div id="md-obs-box" style="background: rgba(239,68,68,0.1); border-right: 4px solid var(--danger); padding: 15px 20px; border-radius: 8px; display: none;">
+                    <h4 style="margin: 0 0 10px 0; color: var(--danger);">🛑 سبب الرفض / الملاحظات:</h4>
+                    <p id="md-obs-text" style="margin: 0; color: #cbd5e1; font-size: 14px; line-height: 1.6; white-space: pre-wrap;"></p>
+                </div>
+
+                <div id="viewer-wrapper" style="display: none;">
+                    <div class="viewer-header">
+                        <h4 class="doc-current-title" id="vd-title">جاري التحميل...</h4>
+                        <span style="color: #64748b; font-size: 12px; font-weight: bold;" id="vd-counter">1 / 1</span>
+                        <a href="#" target="_blank" download class="btn-mini-dl" id="vd-download">📥 تحميل الوثيقة</a>
+                    </div>
+                    
+                    <div class="viewer-container">
+                        <button class="nav-arrow arrow-right" id="btn-prev" onclick="changerDocument(-1)" title="الوثيقة السابقة">&#10095;</button>
+                        <div id="vd-content" style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;"></div>
+                        <button class="nav-arrow arrow-left" id="btn-next" onclick="changerDocument(1)" title="الوثيقة التالية">&#10094;</button>
+                    </div>
+                </div>
+                
+                <div id="no-docs-msg" style="display: none; text-align: center; color: #94a3b8; padding: 40px; font-size: 18px;">
+                    لا توجد أي وثائق أو رخص مرفقة بهذا الملف 📭
+                </div>
+
+            </div>
+        </div>
     </div>
 
     <div id="documentViewer">
@@ -191,7 +378,8 @@
 
     <script>
         const token = localStorage.getItem('token');
-        if (!token || localStorage.getItem('userRole') !== 'admin') window.location.href = 'login.html';
+        const role = localStorage.getItem('userRole');
+        if (!token || role !== 'admin') window.location.href = 'login.html';
 
         let chartsInst = {};
         setInterval(() => { document.getElementById('current-time').innerText = new Date().toLocaleString('ar-MA'); }, 1000);
@@ -204,8 +392,27 @@
             setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3500);
         }
 
-        function exportToExcel(tId, fn) { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(tId)), fn+'.xlsx'); }
-        function exportToPDF(cId, fn) { html2pdf().set({margin:0.5, filename:fn+'.pdf', jsPDF:{orientation:'landscape'}}).from(document.getElementById(cId)).save(); }
+        function exportToExcel(tableId, filename) {
+            const table = document.getElementById(tableId);
+            const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+            XLSX.writeFile(wb, filename + '.xlsx');
+            showToast('تم تحميل ملف Excel بنجاح! 📥');
+        }
+
+        function exportToPDF(containerId, filename) {
+            const element = document.getElementById(containerId);
+            const opt = {
+                margin:       0.5,
+                filename:     filename + '.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+            };
+            showToast('⏳ جاري تجهيز التقرير (PDF)...');
+            html2pdf().set(opt).from(element).save().then(() => {
+                showToast('تم تحميل التقرير الرسمي بنجاح! 📄');
+            });
+        }
 
         function switchTab(tabId, element) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -213,36 +420,38 @@
             document.getElementById(tabId).classList.add('active');
             element.classList.add('active');
             
-            const titles = { 'tab-dashboard': 'نظرة عامة على النظام', 'tab-finance': 'الخزينة والمداخيل 💰', 'tab-sla': 'رادار التأخيرات 🚨', 'tab-charts': 'التقارير والمبيانات 📈', 'tab-demandes': 'الأرشيف الشامل', 'tab-utilisateurs': 'إدارة الموظفين', 'tab-audit': 'سجل الحركات' };
+            const titles = {
+                'tab-dashboard': 'نظرة عامة على النظام',
+                'tab-finance': 'الخزينة والمداخيل 💰',
+                'tab-sla': '🚨 رادار التأخيرات  ',
+                'tab-charts': '📈 تقارير ومبيانات ',
+                'tab-demandes': 'الأرشيف الشامل للملفات',
+                'tab-utilisateurs': 'إدارة الموظفين والصلاحيات',
+                'tab-audit': 'سجل حركات النظام '
+            };
             document.getElementById('page-title').innerText = titles[tabId];
 
             if(tabId === 'tab-dashboard') fetchStats();
-            if(tabId === 'tab-finance') fetchFinance(); // الدالة الجديدة
+            if(tabId === 'tab-finance') fetchFinance();
+            if(tabId === 'tab-demandes') fetchDemandes();
+            if(tabId === 'tab-utilisateurs') fetchUsers();
+            if(tabId === 'tab-audit') fetchAudit();
             if(tabId === 'tab-charts') fetchCharts();
-            if(tabId === 'tab-sla') fetchSLA();
-            // يمكنك إضافة استدعاءات الأرشيف والموظفين هنا كالمعتاد
+            if(tabId === 'tab-sla') fetchSLA(); 
         }
 
         async function fetchAdminData(endpoint) {
             try {
-                const response = await fetch(`/api/admin/${endpoint}`, { headers: { 'Authorization': 'Bearer ' + token } });
-                return response.ok ? await response.json() : null;
+                const response = await fetch(`/api/admin/${endpoint}`, {
+                    method: 'GET',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!response.ok) return null;
+                return await response.json();
             } catch (error) { return null; }
         }
 
-        async function fetchStats() {
-            const data = await fetchAdminData('statistiques');
-            if(data) {
-                document.getElementById('stat-total').innerText = data.total_demandes || 0;
-                document.getElementById('stat-autorise').innerText = data.total_autorise || 0;
-                document.getElementById('stat-rejete').innerText = data.total_rejete || 0;
-                document.getElementById('stat-encours').innerText = data.total_en_cours || 0;
-                // إظهار المداخيل وتنسيقها كالعملة
-                document.getElementById('stat-revenus').innerText = Number(data.total_revenus || 0).toLocaleString('ar-MA') + ' درهم';
-            }
-        }
-
-        // 💰 دالة جلب بيانات الخزينة وعرضها
+        // 💰 1. جلب بيانات الخزينة
         async function fetchFinance() {
             const data = await fetchAdminData('recouvrements');
             const tbody = document.getElementById('tbody-finance');
@@ -251,9 +460,14 @@
             if(data && data.recouvrements.length > 0) {
                 data.recouvrements.forEach(r => {
                     const date = new Date(r.date_paiement).toLocaleDateString('ar-MA');
-                    const periodes = Array.isArray(r.periodes_payees) ? r.periodes_payees.join('، ') : '---';
+                    let periodesStr = '---';
+                    try {
+                        const arr = typeof r.periodes_payees === 'string' ? JSON.parse(r.periodes_payees) : r.periodes_payees;
+                        if(Array.isArray(arr)) periodesStr = arr.join('، ');
+                    } catch(e) {}
+
                     const docBtn = r.doc_paiement_pdf 
-                        ? `<button onclick="openViewer('${r.doc_paiement_pdf}')" style="background:#10b981; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">👁️ عرض الوصل</button>`
+                        ? `<button onclick="openNormalViewer('${r.doc_paiement_pdf}')" style="background:#10b981; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">👁️ الوصل</button>`
                         : '-';
 
                     tbody.innerHTML += `
@@ -263,18 +477,312 @@
                             <td>${r.nom_complet}</td>
                             <td>${r.type_demande}</td>
                             <td style="color:#cbd5e1;">${r.num_quittance}</td>
-                            <td dir="ltr" style="color:#64748b; font-size:12px;">${periodes}</td>
+                            <td dir="ltr" style="color:#64748b; font-size:12px;">${periodesStr}</td>
                             <td><strong style="color:#34d399;">${Number(r.montant_total_paye).toLocaleString('ar-MA')} درهم</strong></td>
                             <td>${docBtn}</td>
                         </tr>
                     `;
                 });
             } else {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">لا توجد استخلاصات مالية مسجلة بعد.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">لا توجد استخلاصات مالية مسجلة.</td></tr>`;
             }
         }
 
-        // 📈 دالة رسم المبيانات (الـ 4 مبيانات)
+        // 🚨 2. جلب التأخيرات
+        async function fetchSLA() {
+            const data = await fetchAdminData('retards');
+            const tbody = document.getElementById('tbody-sla');
+            const badge = document.getElementById('badge-retards');
+            tbody.innerHTML = '';
+            
+            if (data && data.retards && data.retards.length > 0) {
+                badge.innerText = data.total_retards;
+                data.retards.forEach(d => {
+                    let emplacement = '';
+                    if (d.statut.includes('eco')) emplacement = `<span class="badge bg-eco">المكتب الاقتصادي 🟡</span>`;
+                    else if (d.statut === 'en_attente_urbanisme') emplacement = `<span class="badge bg-urb">مصلحة التعمير 🔵</span>`;
+                    else if (d.statut.includes('licence')) emplacement = `<span class="badge bg-lic">مصلحة الرخص 🟣</span>`;
+                    else emplacement = d.statut;
+
+                    let joursColor = d.jours_retard >= 7 ? 'color: #ef4444; font-weight: 900;' : 'color: #f59e0b; font-weight: bold;';
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong style="color:var(--accent);">${d.code_suivi}</strong></td>
+                            <td>${d.nom_complet}</td>
+                            <td>${d.type_demande}</td>
+                            <td style="${joursColor}">${d.jours_retard} أيام</td>
+                            <td>${emplacement}</td>
+                        </tr>
+                    `;
+                });
+            } else { 
+                badge.innerText = "0";
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color: var(--success);">  لا توجد أي ملفات متأخرة في النظام.</td></tr>`; 
+            }
+        }
+
+        // 📊 3. جلب الإحصائيات (مع الخزينة)
+        async function fetchStats() {
+            const data = await fetchAdminData('statistiques');
+            if(data) {
+                document.getElementById('stat-total').innerText = data.total_demandes || 0;
+                document.getElementById('stat-autorise').innerText = data.total_autorise || 0;
+                document.getElementById('stat-rejete').innerText = data.total_rejete || 0;
+                document.getElementById('stat-encours').innerText = data.total_en_cours || 0;
+                document.getElementById('stat-revenus').innerText = Number(data.total_revenus || 0).toLocaleString('ar-MA') + ' درهم';
+            }
+        }
+
+        // 🗄️ 4. الأرشيف ودوال الفلترة
+        let archiveGlobal = []; 
+        let statutFiltre = 'tous';
+
+        async function fetchDemandes() {
+            const data = await fetchAdminData('archive');
+            if (data && data.archive) {
+                archiveGlobal = data.archive;
+                appliquerFiltres();
+            }
+        }
+
+        function afficherArchive(donnees) {
+            const tbody = document.getElementById('tbody-demandes');
+            tbody.innerHTML = '';
+            
+            if (donnees.length > 0) {
+                donnees.forEach((d, index) => {
+                    let badge = d.statut === 'autorise' ? `<span class="badge bg-success">مُرخص ✨</span>` : `<span class="badge bg-danger">مرفوض ❌</span>`;
+                    const date = new Date(d.date_creation).toLocaleDateString('ar-MA');
+                    const cin = d.cin ? d.cin : '<span style="color:#64748b;font-size:11px;">غير مسجل</span>';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-weight: bold; color: #94a3b8;">${index + 1}</td>
+                            <td><strong style="color:var(--accent);">${d.code_suivi}</strong></td>
+                            <td>${d.nom_complet}</td>
+                            <td>${cin}</td>
+                            <td>${d.type_demande}</td>
+                            <td>${date}</td>
+                            <td>${badge}</td>
+                            <td>
+                                <button class="btn-folder" onclick="ouvrirDossier('${d.code_suivi}')">📂 تصفح الملف</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else { 
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px; color: #94a3b8;">لا توجد ملفات مطابقة في الأرشيف 📭</td></tr>`; 
+            }
+        }
+
+        function filtrerParStatut(statut, btnElement) {
+            statutFiltre = statut;
+            document.querySelectorAll('.btn-filter').forEach(btn => {
+                btn.style.background = 'transparent';
+                btn.style.color = '#94a3b8';
+                btn.style.border = '1px solid #334155';
+            });
+            if(statut === 'tous') {
+                btnElement.style.background = 'var(--accent)';
+                btnElement.style.color = 'white';
+                btnElement.style.border = 'none';
+            } else if(statut === 'autorise') {
+                btnElement.style.background = 'rgba(16, 185, 129, 0.2)';
+                btnElement.style.color = '#6ee7b7';
+                btnElement.style.border = '1px solid #10b981';
+            } else {
+                btnElement.style.background = 'rgba(239, 68, 68, 0.2)';
+                btnElement.style.color = '#fca5a5';
+                btnElement.style.border = '1px solid #ef4444';
+            }
+            appliquerFiltres();
+        }
+
+        function rechercherArchive() { appliquerFiltres(); }
+
+        function appliquerFiltres() {
+            const texteRecherche = document.getElementById('searchInput').value.toLowerCase().trim();
+            const resultats = archiveGlobal.filter(d => {
+                const matchStatut = (statutFiltre === 'tous') || (d.statut === statutFiltre);
+                const cinStr = d.cin ? d.cin.toLowerCase() : '';
+                const nomStr = d.nom_complet ? d.nom_complet.toLowerCase() : '';
+                const codeStr = d.code_suivi ? d.code_suivi.toLowerCase() : '';
+                const matchRecherche = nomStr.includes(texteRecherche) || cinStr.includes(texteRecherche) || codeStr.includes(texteRecherche);
+                return matchStatut && matchRecherche;
+            });
+            afficherArchive(resultats);
+        }
+
+        // 🎬 5. العارض السينمائي (تم استرجاعه بالكامل)
+        let listeDocumentsActuels = [];
+        let indexDocumentActuel = 0;
+
+        function ouvrirDossier(code_suivi) {
+            const demande = archiveGlobal.find(d => d.code_suivi === code_suivi);
+            if(!demande) return;
+
+            document.getElementById('md-code').innerText = demande.code_suivi;
+
+            const obsBox = document.getElementById('md-obs-box');
+            const obsText = document.getElementById('md-obs-text');
+            if (demande.statut === 'rejete' && demande.observations && demande.observations.trim() !== '') {
+                obsBox.style.display = 'block';
+                obsText.innerText = demande.observations;
+            } else {
+                obsBox.style.display = 'none';
+            }
+
+            listeDocumentsActuels = [];
+            const docsList = [
+                { key: 'document_1', name: 'البطاقة الوطنية' },
+                { key: 'document_2', name: 'التصميم الهندسي' },
+                { key: 'document_3', name: 'مرفق إضافي 3' },
+                { key: 'document_4', name: 'مرفق إضافي 4' },
+                { key: 'document_autorisation', name: 'الرخصة الموقعة 🏆' }
+            ];
+
+            docsList.forEach(doc => {
+                const path = demande[doc.key];
+                if (path) {
+                    let fileUrl = path.startsWith('http') ? path : `https://rokhsa-laayoune.onrender.com/uploads/${path.replace(/\\/g, '/').split('/').pop()}`;
+                    listeDocumentsActuels.push({ url: fileUrl, titre: doc.name });
+                }
+            });
+
+            if (listeDocumentsActuels.length > 0) {
+                document.getElementById('viewer-wrapper').style.display = 'block';
+                document.getElementById('no-docs-msg').style.display = 'none';
+                indexDocumentActuel = 0;
+                afficherDocumentActuel();
+            } else {
+                document.getElementById('viewer-wrapper').style.display = 'none';
+                document.getElementById('no-docs-msg').style.display = 'block';
+            }
+            document.getElementById('modalDossier').style.display = 'block';
+        }
+
+        function afficherDocumentActuel() {
+            if (listeDocumentsActuels.length === 0) return;
+            const doc = listeDocumentsActuels[indexDocumentActuel];
+            document.getElementById('vd-title').innerText = doc.titre;
+            document.getElementById('vd-counter').innerText = `${indexDocumentActuel + 1} / ${listeDocumentsActuels.length}`;
+            document.getElementById('vd-download').href = doc.url;
+
+            const isPdf = doc.url.toLowerCase().includes('.pdf');
+            const contentDiv = document.getElementById('vd-content');
+            
+            contentDiv.innerHTML = '<span style="color:#64748b;">جاري التحميل... ⏳</span>';
+
+            setTimeout(() => {
+                if (isPdf) {
+                    contentDiv.innerHTML = `<iframe src="${doc.url}" style="width: 100%; height: 100%; border: none; background: white;"></iframe>`;
+                } else {
+                    contentDiv.innerHTML = `<img src="${doc.url}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+                }
+            }, 100);
+
+            document.getElementById('btn-prev').disabled = (indexDocumentActuel === 0);
+            document.getElementById('btn-next').disabled = (indexDocumentActuel === listeDocumentsActuels.length - 1);
+        }
+
+        function changerDocument(direction) {
+            const nouvelleIndex = indexDocumentActuel + direction;
+            if (nouvelleIndex >= 0 && nouvelleIndex < listeDocumentsActuels.length) {
+                indexDocumentActuel = nouvelleIndex;
+                afficherDocumentActuel();
+            }
+        }
+
+        // 👥 6. الموظفون
+        async function fetchUsers() {
+            const data = await fetchAdminData('utilisateurs');
+            const tbody = document.getElementById('tbody-utilisateurs');
+            tbody.innerHTML = '';
+            if (data && data.utilisateurs.length > 0) {
+                data.utilisateurs.forEach(u => {
+                    const roleBadge = u.role === 'admin' ? `<span class="badge bg-danger">👑 مدير عام</span>` : `<span class="badge bg-urb">💼 ${u.role}</span>`;
+                    const deleteBtn = u.role !== 'admin' ? `<button onclick="supprimerEmploye(${u.id}, '${u.nom_complet}')" style="background:transparent; border:none; color:var(--danger); cursor:pointer;" title="حذف الموظف">🗑️</button>` : '';
+                    tbody.innerHTML += `<tr><td><strong>${u.nom_complet}</strong></td><td dir="ltr" style="text-align:right;">${u.email}</td><td>${roleBadge} ${deleteBtn}</td></tr>`;
+                });
+            }
+        }
+
+        async function supprimerEmploye(id, nom) {
+            if(confirm(`هل أنت متأكد من سحب الصلاحيات وحذف الموظف: ${nom}؟`)) {
+                try {
+                    const response = await fetch(`/api/admin/utilisateurs/${id}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+                    if (!response.ok) throw new Error("فشل الحذف من الخادم");
+                    showToast('تم حذف الموظف بنجاح 🗑️');
+                    fetchUsers(); 
+                } catch(e) { showToast(e.message || 'خطأ في الاتصال بالخادم', true); }
+            }
+        }
+
+        async function soumettreNouvelEmploye(event) {
+            event.preventDefault();
+            const btn = document.getElementById('btn-add-user');
+            const originalText = btn.innerText;
+            btn.innerText = '⏳ جاري الإنشاء والتشفير...';
+            btn.disabled = true;
+
+            const nom_complet = document.getElementById('nom_complet').value;
+            const email = document.getElementById('email').value;
+            const mot_de_passe = document.getElementById('mot_de_passe').value;
+            const role_employe = document.getElementById('role').value;
+
+            try {
+                const response = await fetch(`/api/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ nom_complet, email, mot_de_passe, role: role_employe })
+                });
+
+                if (response.ok) {
+                    showToast('تم إنشاء حساب الموظف بنجاح! ✅');
+                    document.getElementById('registerForm').reset();
+                    fetchUsers();
+                } else {
+                    const data = await response.json();
+                    showToast(data.message || 'حدث خطأ أثناء الإضافة', true);
+                }
+            } catch (error) { showToast('خطأ في الاتصال بالسيرفر!', true); } 
+            finally { btn.innerText = originalText; btn.disabled = false; }
+        }
+
+        // 🕵️‍♂️ 7. سجل الحركات
+        async function fetchAudit() {
+            const data = await fetchAdminData('historique');
+            const tbody = document.getElementById('tbody-audit');
+            tbody.innerHTML = '';
+            
+            if (data && data.historique && data.historique.length > 0) {
+                data.historique.forEach(h => {
+                    const date = new Date(h.date_action).toLocaleString('ar-MA');
+                    let actionText = h.action_prise;
+                    let badgeColor = 'var(--accent)';
+                    
+                    if (actionText.includes('en_attente_urbanisme')) { actionText = 'إرسال للتعمير 🔵'; badgeColor = '#3b82f6'; } 
+                    else if (actionText.includes('en_attente_licence')) { actionText = 'إرسال للرخص 🟣'; badgeColor = '#a855f7'; } 
+                    else if (actionText.includes('autorise')) { actionText = 'موافقة نهائية ✨'; badgeColor = '#10b981'; } 
+                    else if (actionText.includes('rejete')) { actionText = 'رفض الملف ❌'; badgeColor = '#ef4444'; } 
+                    else if (actionText.includes('en_attente_eco')) { actionText = 'إرجاع للاقتصاد 🟡'; badgeColor = '#f59e0b'; }
+
+                    const actionBadge = `<span style="background: rgba(255,255,255,0.1); border: 1px solid ${badgeColor}; color: white; padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: bold;">${actionText}</span>`;
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-size:12px; color:#94a3b8; direction: ltr; text-align: right;">${date}</td>
+                            <td><strong style="color: #e2e8f0;">${h.nom_employe || 'النظام الآلي'}</strong></td>
+                            <td><strong style="color:var(--accent);">${h.code_suivi||'-'}</strong></td>
+                            <td>${actionBadge}</td>
+                            <td style="font-size:13px; color:#cbd5e1; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${h.remarques||'---'}">${h.remarques||'---'}</td>
+                        </tr>
+                    `;
+                });
+            } else { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color: #94a3b8;">لا توجد حركات مسجلة.</td></tr>`; }
+        }
+
+        // 📈 8. المبيانات
         async function fetchCharts() {
             const data = await fetchAdminData('charts');
             if (!data) return;
@@ -291,30 +799,20 @@
                 });
             }
 
-            // 1. نسبة الطلبات الإدارية (دائري)
             createChart('reqPieChart', 'doughnut', data.repartition_types.map(i=>i.type_demande), data.repartition_types.map(i=>i.count), 'الطلبات', colors);
-            
-            // 2. المداخيل المالية حسب النشاط (دائري)
             createChart('revPieChart', 'doughnut', data.revenus_par_type.map(i=>i.type_demande), data.revenus_par_type.map(i=>i.revenu), 'المداخيل', ['#059669', '#34d399', '#6ee7b7', '#a7f3d0']);
-
-            // 3. التطور الشهري للطلبات (أعمدة)
+            
             let reqBar = new Array(12).fill(0);
             data.evolution_mensuelle.forEach(i => reqBar[parseInt(i.mois)-1] = i.count);
             createChart('reqBarChart', 'bar', moisNoms, reqBar, 'عدد الطلبات', '#3b82f6');
 
-            // 4. التطور الشهري للمداخيل (أعمدة)
             let revBar = new Array(12).fill(0);
             data.revenus_mensuels.forEach(i => revBar[parseInt(i.mois)-1] = i.revenu);
             createChart('revBarChart', 'bar', moisNoms, revBar, 'المداخيل (درهم)', '#10b981');
         }
 
-        async function fetchSLA() {
-            const data = await fetchAdminData('retards');
-            document.getElementById('badge-retards').innerText = data ? data.total_retards : 0;
-            // يمكنك ملء جدول التأخيرات هنا...
-        }
-
-        function openViewer(url) {
+        // عارض الوثائق العادي لجدول الخزينة
+        function openNormalViewer(url) {
             document.getElementById('viewerFrame').src = url;
             document.getElementById('documentViewer').style.display = 'block';
         }
