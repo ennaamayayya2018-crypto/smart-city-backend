@@ -221,9 +221,14 @@ th, td {
         </div>
 
         <div id="tab-finance" class="tab-content">
-            <div class="export-actions">
-                <button onclick="exportToExcel('table-finance-data', 'سجل_الخزينة_المالية')" class="btn-export-excel">📥 Excel</button>
-                <button onclick="exportToPDF('pdf-finance-container', 'سجل_الخزينة_المالية')" class="btn-export-pdf">📄 PDF</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 15px;">
+                <div style="flex: 1; min-width: 250px; max-width: 400px;">
+                    <input type="text" id="searchFinanceInput" onkeyup="filtrerFinance()" placeholder="🔍 بحث باسم المواطن أو رقم البطاقة (CIN)..." style="width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-family: inherit; box-sizing: border-box;">
+                </div>
+                <div class="export-actions" style="margin: 0;">
+                    <button onclick="exportToExcel('table-finance-data', 'سجل_الخزينة_المالية')" class="btn-export-excel">📥 Excel</button>
+                    <button onclick="exportToPDF('pdf-finance-container', 'سجل_الخزينة_المالية')" class="btn-export-pdf">📄 PDF</button>
+                </div>
             </div>
             <div class="table-container" id="pdf-finance-container" style="padding: 0;">
                 <h3 style="padding: 15px; margin: 0; color: #10b981; border-bottom: 1px solid #334155;">سجل الاستخلاصات المالية (مفصل)</h3>
@@ -497,13 +502,26 @@ th, td {
 
         // 💰 1. جلب بيانات الخزينة
       // 💰 1. جلب بيانات الخزينة
+        // 💰 دوال الخزينة (الجلب، الرسم، والبحث الفوري)
+        let financeGlobal = []; // متغير لحفظ البيانات والبحث بداخلها
+
         async function fetchFinance() {
             const data = await fetchAdminData('recouvrements');
+            if(data && data.recouvrements) {
+                financeGlobal = data.recouvrements;
+                renderFinanceTable(financeGlobal); // رسم الجدول لأول مرة
+            } else {
+                renderFinanceTable([]);
+            }
+        }
+
+        // دالة رسم جدول الخزينة
+        function renderFinanceTable(donnees) {
             const tbody = document.getElementById('tbody-finance');
             tbody.innerHTML = '';
             
-            if(data && data.recouvrements.length > 0) {
-                data.recouvrements.forEach(r => {
+            if(donnees.length > 0) {
+                donnees.forEach(r => {
                     const date = new Date(r.date_paiement).toLocaleDateString('ar-MA');
                     let periodesStr = '---';
                     try {
@@ -515,7 +533,6 @@ th, td {
                         ? `<button onclick="openNormalViewer('${r.doc_paiement_pdf}')" style="background:#10b981; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">👁️ الوصل</button>`
                         : '-';
 
-                    // معالجة الحقول الفارغة
                     const cin = r.cin ? r.cin : '<span style="color:#64748b;font-size:11px;">غير مسجل</span>';
                     const adresse = r.adresse ? r.adresse : '<span style="color:#64748b;font-size:11px;">غير مسجل</span>';
                     const activite = r.type_activite ? r.type_activite : '<span style="color:#64748b;font-size:11px;">---</span>';
@@ -528,7 +545,8 @@ th, td {
                             <td><strong style="color:#cbd5e1;">${cin}</strong></td>
                             <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${r.adresse || ''}">${adresse}</td>
                             <td>${r.type_demande}</td>
-                            <td><strong style="color:#fcd34d;">${activite}</strong></td> <td style="color:#cbd5e1;">${r.num_quittance}</td>
+                            <td><strong style="color:#fcd34d;">${activite}</strong></td>
+                            <td style="color:#cbd5e1;">${r.num_quittance}</td>
                             <td dir="ltr" style="color:#64748b; font-size:12px;">${periodesStr}</td>
                             <td><strong style="color:#34d399;">${Number(r.montant_total_paye).toLocaleString('ar-MA')} درهم</strong></td>
                             <td>${docBtn}</td>
@@ -536,8 +554,21 @@ th, td {
                     `;
                 });
             } else {
-                tbody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding:30px; color:#94a3b8;">لا توجد استخلاصات مالية مسجلة.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding:30px; color:#94a3b8;">لا توجد استخلاصات مالية مطابقة للبحث.</td></tr>`;
             }
+        }
+
+        // دالة الفلترة (تعمل فوراً عند الكتابة)
+        function filtrerFinance() {
+            const terme = document.getElementById('searchFinanceInput').value.toLowerCase().trim();
+            const resultats = financeGlobal.filter(r => {
+                const nomStr = r.nom_complet ? r.nom_complet.toLowerCase() : '';
+                const cinStr = r.cin ? r.cin.toLowerCase() : '';
+                const codeStr = r.code_suivi ? r.code_suivi.toLowerCase() : '';
+                
+                return nomStr.includes(terme) || cinStr.includes(terme) || codeStr.includes(terme);
+            });
+            renderFinanceTable(resultats);
         }
         // 🚨 2. جلب التأخيرات
         async function fetchSLA() {
