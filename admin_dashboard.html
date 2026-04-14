@@ -119,6 +119,33 @@
         
         #documentViewer { display: none; position: fixed; z-index: 99999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(8px); }
         #viewerFrame { width: 85%; height: 90vh; margin: 2.5vh auto; display: block; border: none; border-radius: 12px; background: white; }
+        /* 🌟 زر الإغلاق العائم والمحسن للعارض (إضافة جديدة) */
+.close-viewer { 
+    position: absolute !important; 
+    top: 20px !important; 
+    left: 30px !important; 
+    background-color: #ef4444 !important; 
+    color: white !important; 
+    width: 50px !important; 
+    height: 50px !important; 
+    font-size: 35px !important; 
+    font-weight: bold !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    border-radius: 50% !important; 
+    cursor: pointer !important; 
+    z-index: 9999999 !important; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5) !important;
+    transition: 0.3s !important;
+    line-height: 1 !important;
+    padding-bottom: 5px !important; 
+}
+
+.close-viewer:hover { 
+    background-color: #b91c1c !important; 
+    transform: scale(1.1) !important; 
+}
     </style>
 </head>
 <body>
@@ -617,7 +644,7 @@
         let listeDocumentsActuels = [];
         let indexDocumentActuel = 0;
 
-        function ouvrirDossier(code_suivi) {
+       function ouvrirDossier(code_suivi) {
             const demande = archiveGlobal.find(d => d.code_suivi === code_suivi);
             if(!demande) return;
 
@@ -633,11 +660,15 @@
             }
 
             listeDocumentsActuels = [];
+            
+            // 🌟 قائمة الوثائق الشاملة (تمت إضافة المحاضر هنا)
             const docsList = [
                 { key: 'document_1', name: 'البطاقة الوطنية' },
                 { key: 'document_2', name: 'التصميم الهندسي' },
                 { key: 'document_3', name: 'مرفق إضافي 3' },
                 { key: 'document_4', name: 'مرفق إضافي 4' },
+                { key: 'doc_pv_constat', name: 'محضر المعاينة 📋' },
+                { key: 'doc_pv_recouvrement', name: 'محضر الاستخلاص 💰' },
                 { key: 'document_autorisation', name: 'الرخصة الموقعة 🏆' }
             ];
 

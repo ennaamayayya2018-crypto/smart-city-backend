@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>لوحة التحكم - المكتب الاقتصادي</title>
     <style>
-        /* 🌟 المتغيرات والأساسيات (2026 Standards) */
+        /* 🌟 المتغيرات والأساسيات */
         :root { --primary: #2c3e50; --secondary: #34495e; --success: #2ecc71; --danger: #e74c3c; --warning: #f39c12; --blue: #3498db; --bg: #f8fafc; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: var(--bg); color: #333; margin: 0; }
         
@@ -40,7 +40,6 @@
         .bg-warning { background: linear-gradient(135deg, #f1c40f, #f39c12); }
         .bg-success { background: linear-gradient(135deg, #2ecc71, #27ae60); }
         .bg-danger { background: linear-gradient(135deg, #e74c3c, #c0392b); }
-        .bg-blue { background: linear-gradient(135deg, #3498db, #2980b9); }
         .action-btn { background: white; color: var(--primary); border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         .action-btn:hover { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
@@ -106,6 +105,7 @@
         .btn-down { background: var(--success); }
         .btn-down:hover { background: #27ae60; }
 
+        /* العارض */
         #documentViewer { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(8px); }
         #viewerFrame { width: 85%; height: 90vh; margin: 2.5vh auto; display: block; border: none; border-radius: 12px; background: white; box-shadow: 0 0 30px rgba(0,0,0,0.5); animation: zoomIn 0.3s ease; }
         @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -122,14 +122,21 @@
         .btn-confirm-yes:hover { background: #27ae60; }
         .btn-confirm-no { flex: 1; padding: 12px; background: #e2e8f0; color: var(--primary); border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         .btn-confirm-no:hover { background: #cbd5e1; }
-        /* 🌟 تنسيق شبكي احترافي لنافذة الاستخلاص (UX Improvement) */
-.payment-layout { display: grid; grid-template-columns: 320px 1fr; gap: 20px; padding: 25px; overflow-y: auto; background: var(--bg); }
-.payment-sidebar { display: flex; flex-direction: column; gap: 15px; }
-.payment-main-area { background: #f0fdf4; padding: 25px; border-radius: 12px; border: 2px solid #10b981; display: flex; flex-direction: column; }
-.payment-footer { padding: 15px 25px; background: white; border-top: 1px solid #cbd5e1; }
 
-/* جعل النافذة تستجيب للشاشات الصغيرة */
-@media (max-width: 900px) { .payment-layout { grid-template-columns: 1fr; } }
+        /* 🌟 تنسيق شبكي احترافي لنافذة الاستخلاص (UX Improvement) */
+        .payment-layout { display: grid; grid-template-columns: 320px 1fr; gap: 20px; padding: 25px; overflow-y: auto; background: var(--bg); }
+        .payment-sidebar { display: flex; flex-direction: column; gap: 15px; }
+        .payment-main-area { background: #f0fdf4; padding: 25px; border-radius: 12px; border: 2px solid #10b981; display: flex; flex-direction: column; }
+        .payment-footer { padding: 15px 25px; background: white; border-top: 1px solid #cbd5e1; }
+        @media (max-width: 900px) { .payment-layout { grid-template-columns: 1fr; } }
+        
+        /* 🌟 تصميم جديد لأزرار الرفع أثناء المعالجة (المحاضر) */
+        .upload-pv-box { display: flex; gap: 10px; margin-top: 15px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 10px; }
+        .upload-pv-item { flex: 1; border: 1px dashed #cbd5e1; padding: 10px; text-align: center; border-radius: 8px; background: white; cursor: pointer; transition: 0.3s; }
+        .upload-pv-item:hover { border-color: var(--blue); background: #f0f8ff; }
+        .upload-pv-item input[type="file"] { display: none; }
+        .upload-pv-label { color: var(--primary); font-size: 13px; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .pv-filename { font-size: 11px; color: #64748b; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -208,8 +215,27 @@
                     </div>
 
                     <label style="color: var(--secondary); font-weight: bold; margin-bottom: 8px; display: block;">ملاحظات الإدارة (القرار):</label>
-                    <textarea id="m-observations" rows="5" placeholder="اكتب ملاحظاتك وتوجيهاتك هنا..."></textarea>
+                    <textarea id="m-observations" rows="4" placeholder="اكتب ملاحظاتك وتوجيهاتك هنا..."></textarea>
                     <input type="hidden" id="m-id-demande">
+
+                    <div id="pv-upload-section" class="upload-pv-box" style="display: none;">
+                        <div class="upload-pv-item">
+                            <label class="upload-pv-label">
+                                <span style="font-size: 24px;">📋</span>
+                                إرفاق محضر المعاينة (اختياري)
+                                <input type="file" id="m-pv-constat" accept=".pdf,.jpg,.jpeg,.png" onchange="afficherNomFichier(this, 'filename-constat')">
+                            </label>
+                            <div class="pv-filename" id="filename-constat">لم يتم اختيار ملف</div>
+                        </div>
+                        <div class="upload-pv-item">
+                            <label class="upload-pv-label">
+                                <span style="font-size: 24px;">💰</span>
+                                إرفاق محضر الاستخلاص (اختياري)
+                                <input type="file" id="m-pv-recouvrement" accept=".pdf,.jpg,.jpeg,.png" onchange="afficherNomFichier(this, 'filename-recouv')">
+                            </label>
+                            <div class="pv-filename" id="filename-recouv">لم يتم اختيار ملف</div>
+                        </div>
+                    </div>
 
                     <div class="action-btns">
                         <button id="btn-urb" class="btn-transfer" onclick="openConfirm('en_attente_urbanisme', this)">
@@ -234,7 +260,7 @@
         </div>
     </div>
 
-   <div id="modalPaiement" class="modal">
+    <div id="modalPaiement" class="modal">
         <div class="modal-content" style="height: 85vh; max-height: 800px;">
             <div class="modal-header">
                 <h3 style="margin: 0; color: #10b981;">💰 تسجيل استخلاص مالي جديد (الخزينة)</h3>
@@ -242,7 +268,6 @@
             </div>
             
             <div class="payment-layout">
-                
                 <div class="payment-sidebar">
                     <div class="details-box" style="margin-bottom: 0; border-left: 4px solid #10b981;">
                         <p><strong>الاسم الكامل:</strong> <span id="p-nom"></span></p>
@@ -282,11 +307,9 @@
                     </div>
 
                     <label style="font-weight: bold; color: var(--primary); font-size: 15px; margin-bottom: 10px; display: block;">حدد الدورات المؤدى عنها (دعم المتأخرات والدفع المسبق):</label>
-                    
                     <div class="quarters-grid" id="pay-quarters-container" style="flex: 1; overflow-y: auto; margin-top: 0;">
                         </div>
                 </div>
-
             </div>
 
             <div class="payment-footer">
@@ -294,7 +317,6 @@
                     <span>✅ تأكيد وحفظ الدفعة المالية في الأرشيف</span>
                 </button>
             </div>
-
         </div>
     </div>
 
@@ -348,7 +370,6 @@
             } catch (error) { showToast("حدث خطأ في جلب البيانات", true); }
         }
 
-        // 🌟 البحث الشامل في قاعدة البيانات (للعثور على الملفات المرخصة)
         async function rechercheGlobale() {
             const terme = document.getElementById('searchInput').value.trim();
             if (!terme) {
@@ -363,7 +384,7 @@
                 
                 if (response.ok) {
                     const data = await response.json();
-                    listeDemandes = [data.demande]; // وضع النتيجة الوحيدة في المصفوفة
+                    listeDemandes = [data.demande]; 
                     afficherTableau(listeDemandes);
                     showToast('تم جلب الملف من الأرشيف بنجاح. 🏦');
                 } else {
@@ -380,7 +401,6 @@
             const rej = listeDemandes.filter(d => d.statut === 'retour_urb_defavorable').length;
             const newReq = listeDemandes.filter(d => d.statut === 'en_attente_eco').length;
 
-            // فقط تحديث الـ KPIs إذا كنا في العرض العادي (ليس بحث شامل لملف واحد)
             if(listeDemandes.length !== 1 || !listeDemandes[0].statut.includes('autorise')) {
                 document.getElementById('kpi-new-count').innerText = newReq;
                 document.getElementById('kpi-app-count').innerText = app;
@@ -412,7 +432,6 @@
                     statutTexte = 'مرفوض تقنياً 🔴';
                     rowColor = 'background-color: #fef2f2; border-right: 4px solid #e74c3c;';
                 } else if (d.statut === 'autorise') {
-                    // 🌟 الذكاء في عرض الملفات المرخصة للاستخلاص
                     badgeClass = 'bg-success';
                     statutTexte = 'مرخص نهائياً 📜';
                     rowColor = 'background-color: #f0fdf4; border-right: 4px solid #10b981;';
@@ -451,9 +470,7 @@
             }
         }
 
-        // ==============================================
-        // وظائف نافذة الاستخلاص المالي (الخزينة)
-        // ==============================================
+        // 💰 دوال الخزينة بالكامل
         function renderPayQuartersGrid() {
             const container = document.getElementById('pay-quarters-container');
             container.innerHTML = '';
@@ -486,7 +503,6 @@
                 document.getElementById('p-type').innerText = demande.type_demande;
                 document.getElementById('p-code-suivi').value = demande.code_suivi;
                 
-                // Reset form
                 document.getElementById('p-num-quittance').value = '';
                 document.getElementById('p-doc-paiement').value = '';
                 document.getElementById('p-file-display').innerText = 'لم يتم اختيار أي ملف';
@@ -541,7 +557,7 @@
                 if (response.ok) {
                     showToast('تم تسجيل الاستخلاص المالي وأرشفته بنجاح! 💰');
                     fermerModalPaiement();
-                    chargerDemandes(); // تصفير العودة للصفحة الرئيسية لتفادي الأخطاء
+                    chargerDemandes();
                 } else {
                     const err = await response.json();
                     showToast(err.message, true);
@@ -554,11 +570,8 @@
             }
         }
 
-
-        // ==============================================
-        // وظائف المعالجة الإدارية (كما هي)
-        // ==============================================
-        function ouvrirModal(id) {
+        // ⚙️ دوال المعالجة والقرار بالكامل
+function ouvrirModal(id) {
             const demande = listeDemandes.find(d => d.id === id);
             
             if(demande) {
@@ -569,20 +582,21 @@
                 document.getElementById('m-id-demande').value = demande.id; 
                 document.getElementById('m-observations').value = demande.observations || '';
                 
+                document.getElementById('m-pv-constat').value = '';
+                document.getElementById('m-pv-recouvrement').value = '';
+                document.getElementById('filename-constat').innerText = 'لم يتم اختيار ملف';
+                document.getElementById('filename-recouv').innerText = 'لم يتم اختيار ملف';
+                
                 const docBox = document.getElementById('m-documents');
                 docBox.innerHTML = '';
                 let hasDocs = false;
 
+                // 1. عرض الوثائق الأساسية الأربعة
                 for (let i = 1; i <= 4; i++) {
                    const docPath = demande[`document_${i}`];
                    if (docPath) {
                        hasDocs = true;
-                       let fileUrl = docPath; 
-                       if (!docPath.startsWith('http')) {
-                           const nomFichier = docPath.split('/').pop().split('\\').pop();
-                           fileUrl = `https://rokhsa-laayoune.onrender.com/uploads/${nomFichier}`;
-                       }
-
+                       let fileUrl = docPath.startsWith('http') ? docPath : `https://rokhsa-laayoune.onrender.com/uploads/${docPath.replace(/\\/g, '/').split('/').pop()}`;
                        const isPdf = fileUrl.toLowerCase().includes('.pdf');
                        const icon = isPdf ? '📄' : '🖼️';
         
@@ -592,22 +606,125 @@
                            <div style="font-weight: bold; color: #334155; font-size: 14px;">وثيقة المرفق ${i}</div>
                            <div class="doc-actions">
                                <button class="doc-btn btn-view" onclick="openViewer('${fileUrl}')">👁️ معاينة</button>
-                               <a href="${fileUrl}" target="_blank" download class="doc-btn btn-down" style="text-align:center;">📥 تحميل</a>
+                               <a href="${fileUrl}" target="_blank" download class="doc-btn btn-down">📥 تحميل</a>
                            </div>
-                       </div>
-                       `;
+                       </div>`;
                   }
                 }
 
-                if (!hasDocs) {
-                    docBox.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #94a3b8; padding: 40px; border: 2px dashed #cbd5e1; border-radius: 10px;">لا توجد وثائق مرفقة مع هذا الملف 📁</div>';
-                }
+                // 2. عرض المحاضر إذا تم رفعها مسبقاً (الأرشيف)
+                const pvDocs = [
+                    { path: demande.doc_pv_constat, name: 'محضر المعاينة 📋' },
+                    { path: demande.doc_pv_recouvrement, name: 'محضر الاستخلاص 💰' }
+                ];
+
+                pvDocs.forEach(pv => {
+                    if (pv.path) {
+                        hasDocs = true;
+                        let fileUrl = pv.path.startsWith('http') ? pv.path : `https://rokhsa-laayoune.onrender.com/uploads/${pv.path.replace(/\\/g, '/').split('/').pop()}`;
+                        const isPdf = fileUrl.toLowerCase().includes('.pdf');
+                        const icon = isPdf ? '📄' : '🖼️';
+                        
+                        docBox.innerHTML += `
+                        <div class="doc-card" style="border-color: var(--accent); background: #f0f8ff;">
+                            <div class="doc-icon" onclick="openViewer('${fileUrl}')" title="انقر للمعاينة">${icon}</div>
+                            <div style="font-weight: bold; color: var(--accent); font-size: 14px;">${pv.name}</div>
+                            <div class="doc-actions">
+                                <button class="doc-btn btn-view" onclick="openViewer('${fileUrl}')">👁️ معاينة</button>
+                                <a href="${fileUrl}" target="_blank" download class="doc-btn btn-down">📥 تحميل</a>
+                            </div>
+                        </div>`;
+                    }
+                });
+
+                if (!hasDocs) docBox.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #94a3b8; padding: 40px; border: 2px dashed #cbd5e1; border-radius: 10px;">لا توجد وثائق مرفقة مع هذا الملف 📁</div>';
 
                 const btnUrb = document.getElementById('btn-urb');
                 const btnLic = document.getElementById('btn-lic');
                 const btnRejText = document.querySelector('.btn-reject span');
+                const uploadPvSection = document.getElementById('pv-upload-section');
+                const typesUrbanisme = ['رصيف مغطى', 'رصيف غير مغطى', 'عمود إشهاري'];
+
+                // إظهار منطقة الرفع دائماً لجميع الملفات وفي جميع المراحل (للرفض أو القبول)
+                uploadPvSection.style.display = 'flex';
+
+                if (demande.statut === 'retour_urb_favorable') {
+                    btnUrb.style.display = 'none';   
+                    btnLic.style.display = 'flex';  
+                    btnRejText.innerText = '❌ رفض نهائي (مع إرفاق محضر)';
+                } else if (demande.statut === 'retour_urb_defavorable') {
+                    btnUrb.style.display = 'none';   
+                    btnLic.style.display = 'none';   
+                    btnRejText.innerText = '❌ تأكيد الرفض (مع إرفاق محضر)';
+                } else {
+                    btnRejText.innerText = '❌ رفض مبدئي (مع إرفاق محضر)';
+                    if (typesUrbanisme.includes(demande.type_demande)) {
+                        btnUrb.style.display = 'flex';  
+                        btnLic.style.display = 'none';
+                    } else { 
+                        btnUrb.style.display = 'none';
+                        btnLic.style.display = 'flex';  
+                    }
+                }
+
+                document.getElementById('modalTraitement').style.display = 'block';
+            }
+        }            const demande = listeDemandes.find(d => d.id === id);
+            
+            if(demande) {
+                document.getElementById('m-nom').innerText = demande.nom_complet;
+                document.getElementById('m-cin').innerText = demande.cin;
+                document.getElementById('m-whatsapp').innerText = demande.numero_whatsapp;
+                document.getElementById('m-type').innerText = demande.type_demande;
+                document.getElementById('m-id-demande').value = demande.id; 
+                document.getElementById('m-observations').value = demande.observations || '';
+                
+                document.getElementById('m-pv-constat').value = '';
+                document.getElementById('m-pv-recouvrement').value = '';
+                document.getElementById('filename-constat').innerText = 'لم يتم اختيار ملف';
+                document.getElementById('filename-recouv').innerText = 'لم يتم اختيار ملف';
+                
+                const docBox = document.getElementById('m-documents');
+                docBox.innerHTML = '';
+                let hasDocs = false;
+
+                for (let i = 1; i <= 4; i++) {
+                   const docPath = demande[`document_${i}`];
+                   if (docPath) {
+                       hasDocs = true;
+                       let fileUrl = docPath.startsWith('http') ? docPath : `https://rokhsa-laayoune.onrender.com/uploads/${docPath.replace(/\\/g, '/').split('/').pop()}`;
+                       const isPdf = fileUrl.toLowerCase().includes('.pdf');
+                       const icon = isPdf ? '📄' : '🖼️';
+        
+                       docBox.innerHTML += `
+                       <div class="doc-card">
+                           <div class="doc-icon" onclick="openViewer('${fileUrl}')" title="انقر للمعاينة">${icon}</div>
+                           <div style="font-weight: bold; color: #334155; font-size: 14px;">وثيقة المرفق ${i}</div>
+                           <div class="doc-actions">
+                               <button class="doc-btn btn-view" onclick="openViewer('${fileUrl}')">👁️ معاينة</button>
+                               <a href="${fileUrl}" target="_blank" download class="doc-btn btn-down">📥 تحميل</a>
+                           </div>
+                       </div>`;
+                  }
+                }
+
+                if (!hasDocs) docBox.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #94a3b8; padding: 40px; border: 2px dashed #cbd5e1; border-radius: 10px;">لا توجد وثائق مرفقة مع هذا الملف 📁</div>';
+
+                const btnUrb = document.getElementById('btn-urb');
+                const btnLic = document.getElementById('btn-lic');
+                const btnRejText = document.querySelector('.btn-reject span');
+                const uploadPvSection = document.getElementById('pv-upload-section');
                 
                 const typesUrbanisme = ['رصيف مغطى', 'رصيف غير مغطى', 'عمود إشهاري'];
+
+                let isApresUrbanisme = (demande.statut === 'retour_urb_favorable');
+                let isDirectLicence = (!typesUrbanisme.includes(demande.type_demande)); 
+
+                if (isApresUrbanisme || isDirectLicence) {
+                    uploadPvSection.style.display = 'flex';
+                } else {
+                    uploadPvSection.style.display = 'none';
+                }
 
                 if (demande.statut === 'retour_urb_favorable') {
                     btnUrb.style.display = 'none';   
@@ -616,7 +733,7 @@
                 } else if (demande.statut === 'retour_urb_defavorable') {
                     btnUrb.style.display = 'none';   
                     btnLic.style.display = 'none';   
-                    btnRejText.innerText = '❌ تأكيد الرفض التقني وإشعار المواطن';
+                    btnRejText.innerText = '❌ تأكيد الرفض التقني';
                 } else {
                     btnRejText.innerText = '❌ رفض (نقص الوثائق)';
                     if (typesUrbanisme.includes(demande.type_demande)) {
@@ -634,6 +751,7 @@
 
         function fermerModal() { document.getElementById('modalTraitement').style.display = 'none'; }
 
+        // 👁️ دوال العارض بالكامل
         function openViewer(url) {
             const viewerContainer = document.getElementById('documentViewer');
             const viewerContent = document.getElementById('viewerContent');
@@ -671,6 +789,7 @@
             pendingDecision = null;
         }
 
+        // 💬 محرك الواتساب بالكامل
         function genererLienWhatsApp(nom, cin, type, whatsapp, observations) {
             const obsFinale = (observations && observations.trim() !== "") 
                 ? observations.trim() 
@@ -695,19 +814,30 @@
             const observations = document.getElementById('m-observations').value;
             const demande = listeDemandes.find(d => d.id === id);
             
+            const pvConstat = document.getElementById('m-pv-constat').files[0];
+            const pvRecouvrement = document.getElementById('m-pv-recouvrement').files[0];
+
             const originalText = btnElement.innerHTML;
-            btnElement.innerHTML = '⏳ جاري الإرسال...';
+            btnElement.innerHTML = '⏳ جاري الإرسال والرفع...';
             btnElement.disabled = true;
+
+            const formData = new FormData();
+            formData.append('code_suivi', demande.code_suivi);
+            formData.append('nouveau_statut', nouveauStatut);
+            formData.append('observations', observations);
+            
+            if (pvConstat) formData.append('doc_pv_constat', pvConstat);
+            if (pvRecouvrement) formData.append('doc_pv_recouvrement', pvRecouvrement);
 
             try {
                 const response = await fetch(`/api/eco/demandes/${id}/traiter`, {
                     method: 'PUT', 
-                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code_suivi: demande.code_suivi, nouveau_statut: nouveauStatut, observations: observations })
+                    headers: { 'Authorization': 'Bearer ' + token }, 
+                    body: formData
                 });
 
                 if(response.ok) {
-                    showToast('تمت معالجة الطلب بنجاح! ✅');
+                    showToast('تمت معالجة الطلب ورفع المرفقات بنجاح! ✅');
                     
                     if (nouveauStatut === 'rejete') {
                         setTimeout(() => {
@@ -730,11 +860,7 @@
             }
         };
 
-        function deconnexion() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('userRole');
-            window.location.href = 'login.html';
-        }
+        function deconnexion() { localStorage.removeItem('token'); localStorage.removeItem('userRole'); window.location.href = 'login.html'; }
 
         chargerDemandes();
     </script>
@@ -742,6 +868,7 @@
 <script>
     const socket = io('https://rokhsa-laayoune.onrender.com');
     
+    // 🔔 محرك الإشعارات بالكامل
     function declencherAlerte(donnees, couleur) {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const oscillator = audioCtx.createOscillator();
@@ -763,13 +890,13 @@
 
     const pageActuelle = window.location.pathname;
 
-    if (pageActuelle.includes('dashboard.html') && !pageActuelle.includes('urbanisme') && !pageActuelle.includes('licence') && !pageActuelle.includes('admin')) {
+    if (pageActuelle.includes('dashboard.html') && !pageActuelle.includes('urbanisme') && !pageActuelle.includes('licence') && !pageActuelle.includes('admin')) { 
         socket.on('alerte_eco', (data) => declencherAlerte(data, '#f59e0b')); 
     } 
-    else if (pageActuelle.includes('urbanisme_dashboard.html')) {
+    else if (pageActuelle.includes('urbanisme_dashboard.html')) { 
         socket.on('alerte_urb', (data) => declencherAlerte(data, '#3b82f6')); 
     } 
-    else if (pageActuelle.includes('licence_dashboard.html')) {
+    else if (pageActuelle.includes('licence_dashboard.html')) { 
         socket.on('alerte_licence', (data) => declencherAlerte(data, '#10b981')); 
     }
 </script>

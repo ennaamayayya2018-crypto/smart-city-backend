@@ -1,49 +1,31 @@
 const express = require('express');
 const router = express.Router();
 const ecoController = require('../controllers/ecoController');
-const multer = require('multer'); // 💡 استدعاء مكتبة الرفع
+const multer = require('multer');
 
-// 1. استدعاء حارس الأمان (Middleware)
 const authMiddleware = require('../middlewares/authMiddleware');
 
-// 🛡️ تجهيز حارس الرفع لاستقبال وصل الأداء للاستخلاصات المستمرة
+// 🛡️ حارس رفع وصل الأداء (الاستخلاصات المستمرة)
 const uploadPaiement = multer({ storage: multer.memoryStorage() }).single('document_paiement');
 
-// ==========================================
-// 2. تطبيق الحارس على الروابط (التشفير)
-// ==========================================
+// 🛡️ حارس جديد لرفع محاضر المعاينة والاستخلاص أثناء المعالجة
+const uploadTraiter = multer({ storage: multer.memoryStorage() }).fields([
+    { name: 'doc_pv_constat', maxCount: 1 },
+    { name: 'doc_pv_recouvrement', maxCount: 1 }
+]);
 
-// 1. مسار جلب الطلبات (محمي)
-router.get(
-    '/demandes', 
-    authMiddleware.verifierToken, 
-    authMiddleware.verifierRole(['eco', 'admin']), 
-    ecoController.getDemandesEco
-);
+router.get('/demandes', authMiddleware.verifierToken, authMiddleware.verifierRole(['eco', 'admin']), ecoController.getDemandesEco);
+router.get('/recherche', authMiddleware.verifierToken, authMiddleware.verifierRole(['eco', 'admin']), ecoController.rechercherDemande);
 
-// 2. مسار البحث عن طلب (محمي)
-router.get(
-    '/recherche', 
-    authMiddleware.verifierToken, 
-    authMiddleware.verifierRole(['eco', 'admin']), 
-    ecoController.rechercherDemande
-);
-
-// 3. مسار معالجة/تحويل الطلب (محمي)
+// 🚀 تحديث مسار المعالجة ليستخدم الحارس المزدوج
 router.put(
     '/demandes/:id/traiter', 
     authMiddleware.verifierToken, 
     authMiddleware.verifierRole(['eco', 'admin']), 
+    uploadTraiter, // <--- الحارس الجديد تم حقنه هنا
     ecoController.traiterDemande
 );
 
-// 4. 💰 مسار تسجيل استخلاص مالي جديد للملفات المرخصة (الجديد)
-router.post(
-    '/paiement',
-    authMiddleware.verifierToken,
-    authMiddleware.verifierRole(['eco', 'admin']),
-    uploadPaiement,
-    ecoController.enregistrerPaiement
-);
+router.post('/paiement', authMiddleware.verifierToken, authMiddleware.verifierRole(['eco', 'admin']), uploadPaiement, ecoController.enregistrerPaiement);
 
 module.exports = router;
