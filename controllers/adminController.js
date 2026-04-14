@@ -98,10 +98,11 @@ const supprimerUtilisateur = async (req, res) => {
 };
 
 // 💰 9. جلب سجل الخزينة والمداخيل (الجديد)
+// 💰 9. جلب سجل الخزينة والمداخيل
 const getRecouvrements = async (req, res) => {
     try {
         const query = `
-            SELECT r.*, d.nom_complet, d.type_demande, d.cin 
+            SELECT r.*, d.nom_complet, d.type_demande, d.cin, d.adresse 
             FROM recouvrements r
             JOIN demandes d ON r.code_suivi = d.code_suivi
             ORDER BY r.created_at DESC;
