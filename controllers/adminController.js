@@ -1,181 +1,117 @@
 const db = require('../config/db');
 
-// ==========================================
-// 1. جلب الإحصائيات الشاملة للوحة القيادة
-// ==========================================
+// 1. جلب الإحصائيات الشاملة (مع إجمالي المداخيل)
 const getStatistiques = async (req, res) => {
     try {
         const query = `
             SELECT 
-                COUNT(*) as total_demandes,
-                SUM(CASE WHEN statut = 'autorise' THEN 1 ELSE 0 END) as total_autorise,
-                SUM(CASE WHEN statut = 'rejete' THEN 1 ELSE 0 END) as total_rejete,
-                SUM(CASE WHEN statut LIKE 'en_attente%' OR statut LIKE 'retour_%' THEN 1 ELSE 0 END) as total_en_cours
-            FROM demandes;
+                (SELECT COUNT(*) FROM demandes) as total_demandes,
+                (SELECT SUM(CASE WHEN statut = 'autorise' THEN 1 ELSE 0 END) FROM demandes) as total_autorise,
+                (SELECT SUM(CASE WHEN statut = 'rejete' THEN 1 ELSE 0 END) FROM demandes) as total_rejete,
+                (SELECT SUM(CASE WHEN statut LIKE 'en_attente%' OR statut LIKE 'retour_%' THEN 1 ELSE 0 END) FROM demandes) as total_en_cours,
+                (SELECT COALESCE(SUM(montant_total_paye), 0) FROM recouvrements) as total_revenus
         `;
         const result = await db.query(query);
         res.status(200).json(result.rows[0]);
-    } catch (error) {
-        res.status(500).json({ message: 'حدث خطأ أثناء جلب الإحصائيات.' });
-    }
+    } catch (error) { res.status(500).json({ message: 'حدث خطأ أثناء جلب الإحصائيات.' }); }
 };
 
-// ==========================================
-// 2. جلب جميع الملفات في النظام (للرؤية البانورامية)
-// ==========================================
 const getAllDemandes = async (req, res) => {
     try {
         const query = `SELECT * FROM demandes ORDER BY date_creation DESC;`;
         const result = await db.query(query);
         res.status(200).json({ demandes: result.rows });
-    } catch (error) {
-        res.status(500).json({ message: 'حدث خطأ أثناء جلب الملفات.' });
-    }
+    } catch (error) { res.status(500).json({ message: 'حدث خطأ أثناء جلب الملفات.' }); }
 };
 
-// ==========================================
-// 3. جلب سجل الموظفين (إدارة الموارد البشرية)
-// ==========================================
 const getAllUsers = async (req, res) => {
     try {
-        // لا نجلب كلمات السر لأسباب أمنية
         const query = `SELECT id, nom_complet, email, role, date_creation FROM utilisateurs ORDER BY date_creation DESC;`;
         const result = await db.query(query);
         res.status(200).json({ utilisateurs: result.rows });
-    } catch (error) {
-        res.status(500).json({ message: 'حدث خطأ أثناء جلب قائمة الموظفين.' });
-    }
+    } catch (error) { res.status(500).json({ message: 'حدث خطأ أثناء جلب الموظفين.' }); }
 };
 
-// ==========================================
-// 4. جلب الصندوق الأسود (سجل الحركات من historique_actions)
-// ==========================================
 const getAuditTrail = async (req, res) => {
     try {
-        // جلب البيانات مباشرة لأن الجدول يحتوي على الأسماء والأرقام مسبقاً
-        const query = `
-            SELECT id, action_prise, remarques, date_action, nom_employe, code_suivi
-            FROM historique_actions
-            ORDER BY date_action DESC
-            LIMIT 100;
-        `;
+        const query = `SELECT * FROM historique_actions ORDER BY date_action DESC LIMIT 100;`;
         const result = await db.query(query);
         res.status(200).json({ historique: result.rows });
-    } catch (error) {
-        console.error('Error fetching audit:', error);
-        res.status(500).json({ message: 'حدث خطأ أثناء جلب سجل الحركات.' });
-    }
+    } catch (error) { res.status(500).json({ message: 'حدث خطأ أثناء جلب سجل الحركات.' }); }
 };
 
-// ==========================================
-// 5. جلب بيانات الرسوم البيانية (Charts Data)
-// ==========================================
+// 📈 5. جلب بيانات الرسوم البيانية الإدارية والمالية
 const getChartData = async (req, res) => {
     try {
-        // 1. بيانات المبيان الدائري (تجميع حسب نوع الطلب)
-        const queryTypes = `SELECT type_demande, COUNT(*) as count FROM demandes GROUP BY type_demande;`;
-        const resultTypes = await db.query(queryTypes);
+        // إحصائيات إدارية (الأنواع + التطور الشهري للطلبات)
+        const resultTypes = await db.query(`SELECT type_demande, COUNT(*) as count FROM demandes GROUP BY type_demande;`);
+        const resultMonthsReq = await db.query(`
+            SELECT EXTRACT(MONTH FROM date_creation) as mois, COUNT(*) as count 
+            FROM demandes WHERE EXTRACT(YEAR FROM date_creation) = EXTRACT(YEAR FROM CURRENT_DATE) GROUP BY mois ORDER BY mois;
+        `);
 
-        // 2. بيانات المبيان بالأعمدة (الطلبات حسب الأشهر للعام الحالي)
-        const queryMonths = `
-            SELECT 
-                EXTRACT(MONTH FROM date_creation) as mois, 
-                COUNT(*) as count 
-            FROM demandes 
-            WHERE EXTRACT(YEAR FROM date_creation) = EXTRACT(YEAR FROM CURRENT_DATE)
-            GROUP BY mois 
-            ORDER BY mois;
-        `;
-        const resultMonths = await db.query(queryMonths);
+        // إحصائيات مالية (المداخيل حسب النوع + التطور الشهري للمداخيل)
+        const resultRevByType = await db.query(`
+            SELECT d.type_demande, COALESCE(SUM(r.montant_total_paye), 0) as revenu 
+            FROM demandes d JOIN recouvrements r ON d.code_suivi = r.code_suivi GROUP BY d.type_demande;
+        `);
+        const resultRevByMonth = await db.query(`
+            SELECT EXTRACT(MONTH FROM date_paiement) as mois, COALESCE(SUM(montant_total_paye), 0) as revenu 
+            FROM recouvrements WHERE EXTRACT(YEAR FROM date_paiement) = EXTRACT(YEAR FROM CURRENT_DATE) GROUP BY mois ORDER BY mois;
+        `);
 
         res.status(200).json({
             repartition_types: resultTypes.rows,
-            evolution_mensuelle: resultMonths.rows
+            evolution_mensuelle: resultMonthsReq.rows,
+            revenus_par_type: resultRevByType.rows,
+            revenus_mensuels: resultRevByMonth.rows
         });
-    } catch (error) {
-        console.error('Chart Data Error:', error);
-        res.status(500).json({ message: 'حدث خطأ أثناء جلب بيانات الرسوم البيانية.' });
-    }
+    } catch (error) { res.status(500).json({ message: 'حدث خطأ أثناء جلب بيانات المبيانات.' }); }
 };
 
-// ==========================================
-// 6. محرك تتبع التأخير (SLA & Bottleneck Tracker)
-// ==========================================
 const getFichiersEnRetard = async (req, res) => {
     try {
-        // نبحث عن الملفات التي لم تنتهِ (ليست autorise وليست rejete)
-        // ونحسب عدد الأيام التي مرت منذ تاريخ وضع الطلب (date_creation)
         const query = `
-            SELECT 
-                code_suivi, 
-                nom_complet, 
-                type_demande, 
-                statut,
-                date_creation,
-                EXTRACT(DAY FROM CURRENT_TIMESTAMP - date_creation) as jours_retard
-            FROM demandes
-            WHERE statut NOT IN ('autorise', 'rejete')
-            AND EXTRACT(DAY FROM CURRENT_TIMESTAMP - date_creation) >= 3
+            SELECT code_suivi, nom_complet, type_demande, statut, date_creation,
+                   EXTRACT(DAY FROM CURRENT_TIMESTAMP - date_creation) as jours_retard
+            FROM demandes WHERE statut NOT IN ('autorise', 'rejete') AND EXTRACT(DAY FROM CURRENT_TIMESTAMP - date_creation) >= 3
             ORDER BY jours_retard DESC;
         `;
-        
         const result = await db.query(query);
-        res.status(200).json({ 
-            message: 'تم جلب الملفات المتأخرة بنجاح',
-            total_retards: result.rowCount,
-            retards: result.rows 
-        });
-    } catch (error) {
-        console.error('Error in SLA Tracker:', error);
-        res.status(500).json({ message: 'حدث خطأ أثناء فحص الملفات المتأخرة.' });
-    }
+        res.status(200).json({ total_retards: result.rowCount, retards: result.rows });
+    } catch (error) { res.status(500).json({ message: 'حدث خطأ أثناء فحص التأخيرات.' }); }
 };
 
-// ==========================================
-// 7. جلب الأرشيف النهائي (مرخص ومرفوض فقط)
-// ==========================================
 const getArchiveDefinitif = async (req, res) => {
     try {
-        const query = `
-            SELECT * FROM demandes 
-            WHERE statut IN ('autorise', 'rejete') 
-            ORDER BY date_creation DESC;
-        `;
-        const result = await db.query(query);
+        const result = await db.query(`SELECT * FROM demandes WHERE statut IN ('autorise', 'rejete') ORDER BY date_creation DESC;`);
         res.status(200).json({ archive: result.rows });
-    } catch (error) {
-        console.error('Error fetching archive:', error);
-        res.status(500).json({ message: 'حدث خطأ أثناء جلب الأرشيف النهائي.' });
-    }
+    } catch (error) { res.status(500).json({ message: 'حدث خطأ أثناء جلب الأرشيف.' }); }
 };
 
-// ==========================================
-// 8. حذف موظف (سحب الصلاحيات) 🚨
-// ==========================================
 const supprimerUtilisateur = async (req, res) => {
     try {
-        const id = req.params.id;
-        // جدار حماية إضافي: نمنع حذف حساب المدير العام الأساسي
-        const query = `DELETE FROM utilisateurs WHERE id = $1 AND role != 'admin' RETURNING *;`;
-        const result = await db.query(query, [id]);
+        const result = await db.query(`DELETE FROM utilisateurs WHERE id = $1 AND role != 'admin' RETURNING *;`, [req.params.id]);
+        if (result.rowCount === 0) return res.status(400).json({ message: 'لا يمكن حذف هذا الحساب.' });
+        res.status(200).json({ message: 'تم الحذف.' });
+    } catch (error) { res.status(500).json({ message: 'حدث خطأ.' }); }
+};
 
-        if (result.rowCount === 0) {
-            return res.status(400).json({ message: 'لا يمكن حذف هذا الحساب (قد يكون حساب مدير أو غير موجود).' });
-        }
-        res.status(200).json({ message: 'تم سحب الصلاحيات وحذف الموظف بنجاح.' });
+// 💰 9. جلب سجل الخزينة والمداخيل (الجديد)
+const getRecouvrements = async (req, res) => {
+    try {
+        const query = `
+            SELECT r.*, d.nom_complet, d.type_demande, d.cin 
+            FROM recouvrements r
+            JOIN demandes d ON r.code_suivi = d.code_suivi
+            ORDER BY r.created_at DESC;
+        `;
+        const result = await db.query(query);
+        res.status(200).json({ recouvrements: result.rows });
     } catch (error) {
-        res.status(500).json({ message: 'حدث خطأ أثناء محاولة حذف الموظف.' });
+        console.error('Error fetching finance:', error);
+        res.status(500).json({ message: 'حدث خطأ أثناء جلب السجل المالي.' });
     }
 };
 
-
-module.exports = {
-    getStatistiques,
-    getAllDemandes,
-    getAllUsers,
-    getAuditTrail,
-    getChartData,
-    getFichiersEnRetard,
-    getArchiveDefinitif,
-    supprimerUtilisateur
-};
+module.exports = { getStatistiques, getAllDemandes, getAllUsers, getAuditTrail, getChartData, getFichiersEnRetard, getArchiveDefinitif, supprimerUtilisateur, getRecouvrements };

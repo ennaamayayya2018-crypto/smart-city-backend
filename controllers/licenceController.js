@@ -46,43 +46,85 @@ const rechercherDemande = async (req, res) => {
     } catch (error) { res.status(500).json({ message: 'خطأ أثناء البحث.' }); }
 };
 
-// 🚀 دالة الإصدار النهائية مع الرفع السحابي
+// 🚀 دالة الإصدار المتكاملة (الاستخلاص المالي + الإصدار الإداري)
 const delivrerLicence = async (req, res) => {
     try {
-        const { code_suivi } = req.body;
+        // 1. استلام جميع البيانات من الواجهة
+        const { 
+            code_suivi, adresse, type_activite, surface_totale, 
+            num_quittance, montant_unitaire, montant_total_paye, periodes_payees 
+        } = req.body;
+
         if (!code_suivi) return res.status(400).json({ message: 'المرجو تحديد رقم الطلب.' });
 
-        let document_autorisation = null;
-
-        // التحقق مما إذا قام الموظف برفع ملف الرخصة
         const files = req.files || {};
-        if (files['document_autorisation'] && files['document_autorisation'][0]) {
-            const file = files['document_autorisation'][0];
-            // رفع الملف للسحابة
-            document_autorisation = await uploadToCloudinary(file.buffer, file.originalname);
+        
+        // جدار الحماية: التأكد من وجود وصل الأداء
+        if (!files['document_paiement'] || !files['document_paiement'][0]) {
+            return res.status(400).json({ message: 'وصل الأداء المالي (PDF/صورة) إجباري لإتمام العملية.' });
         }
 
-        // تحديث قاعدة البيانات
-        const query = `
+        // 2. الرفع السحابي للملفات
+        // أ. رفع وصل الأداء (إجباري)
+        const filePaiement = files['document_paiement'][0];
+        const doc_paiement_url = await uploadToCloudinary(filePaiement.buffer, filePaiement.originalname);
+
+        // ب. رفع الرخصة (اختياري)
+        let document_autorisation_url = null;
+        if (files['document_autorisation'] && files['document_autorisation'][0]) {
+            const fileAuto = files['document_autorisation'][0];
+            document_autorisation_url = await uploadToCloudinary(fileAuto.buffer, fileAuto.originalname);
+        }
+
+        // 3. تحديث جدول الطلبات (demandes)
+        const updateDemandesQuery = `
             UPDATE demandes 
             SET statut = 'autorise', 
-                document_autorisation = COALESCE($1, document_autorisation)
-            WHERE code_suivi = $2 AND statut = 'en_attente_licence'
+                adresse = COALESCE($1, adresse),
+                type_activite = COALESCE($2, type_activite),
+                surface_totale = COALESCE($3, surface_totale),
+                document_autorisation = COALESCE($4, document_autorisation)
+            WHERE code_suivi = $5 AND statut = 'en_attente_licence'
             RETURNING *;
         `;
         
-        const result = await db.query(query, [document_autorisation, code_suivi]);
+        const resultDemande = await db.query(updateDemandesQuery, [
+            adresse || null, 
+            type_activite || null, 
+            surface_totale || null, 
+            document_autorisation_url, 
+            code_suivi
+        ]);
 
-        if (result.rowCount === 0) return res.status(404).json({ message: 'الملف غير متاح.' });
+        if (resultDemande.rowCount === 0) {
+            return res.status(404).json({ message: 'الملف غير متاح أو تم ترخيصه مسبقاً.' });
+        }
 
+        // 4. إدخال العملية المالية في جدول الاستخلاصات (recouvrements)
+        const insertRecouvrementQuery = `
+            INSERT INTO recouvrements 
+            (code_suivi, periodes_payees, montant_unitaire, montant_total_paye, num_quittance, doc_paiement_pdf)
+            VALUES ($1, $2::jsonb, $3, $4, $5, $6)
+        `;
+        
+        await db.query(insertRecouvrementQuery, [
+            code_suivi,
+            periodes_payees, // يتم إرساله من الواجهة كـ JSON String
+            montant_unitaire,
+            montant_total_paye,
+            num_quittance,
+            doc_paiement_url
+        ]);
+
+        // 5. إرسال الرد بالنجاح
         res.status(200).json({
-            message: 'تم الإصدار وحفظ الرخصة في الأرشيف بنجاح!',
-            statut_actuel: result.rows[0].statut
+            message: 'تم تسجيل الاستخلاص وإصدار الرخصة بنجاح!',
+            statut_actuel: resultDemande.rows[0].statut
         });
 
     } catch (error) {
-        console.error('❌ خطأ أثناء تسليم الرخصة:', error);
-        res.status(500).json({ message: 'حدث خطأ في الخادم.' });
+        console.error('❌ خطأ أثناء تسليم الرخصة والاستخلاص:', error);
+        res.status(500).json({ message: 'حدث خطأ في الخادم أثناء حفظ البيانات.' });
     }
 };
 

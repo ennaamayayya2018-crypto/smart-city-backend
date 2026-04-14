@@ -4,16 +4,14 @@
     <meta charset="UTF-8">
     <title>لوحة التحكم - مصلحة الرخص</title>
     <style>
-        /* 🌟 المتغيرات والأساسيات (2026 Standards) */
+        /* 🌟 المتغيرات والأساسيات */
         :root { --primary: #16a085; --secondary: #1abc9c; --success: #2ecc71; --danger: #e74c3c; --warning: #f39c12; --blue: #3498db; --bg: #f4f7f6; --dark: #2c3e50; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: var(--bg); color: #333; margin: 0; }
         
-        /* 🌟 الهيدر (لون أخضر يدل على الموافقة النهائية) */
         .header { background: linear-gradient(135deg, var(--dark), var(--primary)); color: white; padding: 20px 30px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 25px; }
         .logout-btn { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.3s; backdrop-filter: blur(5px); }
         .logout-btn:hover { background: var(--danger); border-color: var(--danger); transform: translateY(-2px); }
 
-        /* 🌟 بطاقات الإحصائيات */
         .kpi-container { display: flex; gap: 20px; margin-bottom: 25px; }
         .kpi-card { flex: 1; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; border-right: 5px solid var(--primary); transition: transform 0.3s; }
         .kpi-card:hover { transform: translateY(-5px); }
@@ -21,13 +19,11 @@
         .kpi-card .number { font-size: 28px; font-weight: bold; color: var(--dark); margin-top: 5px; }
         .kpi-icon { font-size: 35px; opacity: 0.8; }
 
-        /* 🌟 شريط البحث */
         .search-container { margin-bottom: 20px; position: relative; }
         .search-input { width: 100%; padding: 15px 45px 15px 15px; border-radius: 10px; border: 2px solid #e2e8f0; font-size: 16px; transition: 0.3s; box-sizing: border-box; }
         .search-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(22, 160, 133, 0.15); }
         .search-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 20px; color: #94a3b8; }
 
-        /* 🌟 الجدول */
         table { width: 100%; border-collapse: separate; border-spacing: 0; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         th, td { padding: 16px; text-align: right; border-bottom: 1px solid #edf2f7; }
         th { background-color: #f8fafc; color: var(--dark); font-weight: 700; font-size: 13px; }
@@ -36,36 +32,56 @@
         .action-btn:hover { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(22, 160, 133, 0.2); }
         .empty-state { text-align: center; padding: 50px; color: #64748b; font-size: 18px; font-weight: bold; }
 
-        /* 🌟 النافذة المنبثقة */
+        /* النافذة المنبثقة */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(5px); }
-        .modal-content { background-color: #fff; margin: 3% auto; border-radius: 16px; width: 85%; max-width: 1200px; height: 85vh; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); display: flex; flex-direction: column; overflow: hidden; animation: slideIn 0.3s ease-out; }
+        .modal-content { background-color: #fff; margin: 2% auto; border-radius: 16px; width: 90%; max-width: 1300px; height: 90vh; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); display: flex; flex-direction: column; overflow: hidden; animation: slideIn 0.3s ease-out; }
         @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .modal-header { padding: 20px 30px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
         .close-btn { color: #64748b; font-size: 28px; cursor: pointer; transition: 0.2s; }
         .close-btn:hover { color: var(--danger); transform: scale(1.1); }
         .modal-body { display: flex; flex: 1; overflow: hidden; }
-        .modal-info { flex: 1; padding: 25px 30px; overflow-y: auto; display: flex; flex-direction: column; }
-        .modal-docs { flex: 1; background: #f1f5f9; padding: 25px; border-right: 1px solid #e2e8f0; overflow-y: auto; }
+        .modal-info { flex: 1; padding: 25px 30px; overflow-y: auto; display: flex; flex-direction: column; border-left: 1px solid #e2e8f0; }
+        .modal-docs { width: 35%; background: #f1f5f9; padding: 25px; overflow-y: auto; }
 
         .details-box { background: white; padding: 20px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
         .details-box p { margin: 8px 0; color: #475569; }
         .details-box strong { color: var(--dark); width: 150px; display: inline-block; }
 
-        /* 🌟 منطقة رفع الرخصة الموقعة */
-        .upload-area { border: 2px dashed #cbd5e1; padding: 20px; text-align: center; border-radius: 10px; background: #f8fafc; margin-bottom: 20px; transition: 0.3s; }
+        /* 🌟 قسم الاستخلاص المالي الجديد */
+        .financial-section { background: #f0fdf4; border: 2px solid var(--primary); padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .financial-title { color: var(--primary); margin-top: 0; border-bottom: 2px solid #bbf7d0; padding-bottom: 10px; font-size: 18px; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-weight: bold; margin-bottom: 8px; color: var(--dark); font-size: 14px; }
+        .input-group input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 14px; }
+        .input-group input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(22, 160, 133, 0.15); }
+        .grid-2-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+        /* 🌟 شبكة الدورات والسنوات */
+        .quarters-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; background: white; padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1; }
+        .year-row { display: flex; align-items: center; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px; }
+        .year-row:last-child { border-bottom: none; padding-bottom: 0; }
+        .year-label { font-weight: bold; width: 70px; color: var(--dark); font-size: 15px; }
+        .quarters-checkboxes { display: flex; gap: 15px; flex: 1; flex-wrap: wrap; }
+        .quarters-checkboxes label { display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 14px; background: #f8fafc; padding: 5px 10px; border-radius: 5px; border: 1px solid #e2e8f0; transition: 0.2s; }
+        .quarters-checkboxes label:hover { background: #e0f2fe; }
+        
+        .total-box { background: var(--dark); color: white; padding: 20px; border-radius: 8px; text-align: center; margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .total-amount { font-size: 32px; font-weight: bold; color: var(--warning); display: block; margin-top: 5px; }
+
+        /* مناطق الرفع المزدوجة */
+        .uploads-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .upload-area { border: 2px dashed #cbd5e1; padding: 15px; text-align: center; border-radius: 10px; background: #f8fafc; transition: 0.3s; }
         .upload-area:hover { border-color: var(--primary); background: #f0fdf4; }
         .upload-area input[type="file"] { display: none; }
-        .upload-label { cursor: pointer; color: var(--primary); font-weight: bold; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        .upload-label span { font-size: 30px; }
-        #file-name-display { margin-top: 10px; font-size: 13px; color: #64748b; }
+        .upload-label { cursor: pointer; color: var(--dark); font-weight: bold; display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 13px; }
+        .upload-label span { font-size: 25px; }
+        .file-name-display { margin-top: 8px; font-size: 12px; color: #64748b; }
 
-        /* 🌟 أزرار القرار النهائي */
         .action-btns { margin-top: auto; padding-top: 20px; display: flex; gap: 12px; position: sticky; bottom: 0; background: white; padding-bottom: 10px; }
         .btn-approve { flex: 1; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; color: white; background: linear-gradient(135deg, #16a085, #1abc9c); box-shadow: 0 4px 15px rgba(22, 160, 133, 0.3); transition: 0.3s; }
         .btn-approve:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(22, 160, 133, 0.4); }
 
-        /* 🌟 معرض الوثائق والعارض (نفس مكتب الاقتصاد) */
-        .doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
+        .doc-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 15px; }
         .doc-card { background: white; border: 1px solid #cbd5e1; border-radius: 12px; padding: 15px; text-align: center; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .doc-card:hover { transform: translateY(-5px); border-color: var(--blue); }
         .doc-icon { font-size: 45px; margin-bottom: 10px; cursor: pointer; }
@@ -98,7 +114,7 @@
     <div class="kpi-container">
         <div class="kpi-card">
             <div>
-                <h3>إجمالي الملفات الجاهزة للإصدار</h3>
+                <h3>إجمالي الملفات الجاهزة للاستخلاص والإصدار</h3>
                 <div class="number" id="kpi-total-count">0</div>
             </div>
             <div class="kpi-icon">🗂️</div>
@@ -125,7 +141,7 @@
     <div id="modalTraitement" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 style="margin: 0; color: var(--primary);">✅ إصدار الرخصة النهائية</h3>
+                <h3 style="margin: 0; color: var(--primary);">✅ معالجة الاستخلاص المالي وإصدار الرخصة</h3>
                 <span class="close-btn" onclick="fermerModal()">&times;</span>
             </div>
             
@@ -136,24 +152,71 @@
                         <p><strong>رقم البطاقة (CIN):</strong> <span id="m-cin"></span></p>
                         <p><strong>رقم الواتساب:</strong> <span id="m-whatsapp"></span></p>
                         <p><strong>نوع الطلب:</strong> <span id="m-type" style="background: #e0f2fe; color: #0284c7; padding: 2px 8px; border-radius: 4px;"></span></p>
-                        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
-                        <p style="color: var(--primary); font-weight: bold;">⚠️ هذا الملف حاصل على جميع الموافقات القبلية.</p>
                     </div>
 
                     <input type="hidden" id="m-code-suivi">
 
-                    <div class="upload-area">
-                        <label class="upload-label">
-                            <span>📤</span>
-                            اضغط هنا لرفع نسخة من الرخصة الموقعة (اختياري)
-                            <input type="file" id="m-doc-licence" accept=".pdf,.jpg,.jpeg,.png" onchange="afficherNomFichier(this)">
-                        </label>
-                        <div id="file-name-display">لم يتم اختيار أي ملف</div>
+                    <div class="financial-section">
+                        <h4 class="financial-title">💰 بيانات الاستخلاص المالي (إجباري)</h4>
+                        
+                        <div class="grid-2-cols">
+                            <div class="input-group">
+                                <label>العنوان الكامل للمشروع:</label>
+                                <input type="text" id="m-adresse" placeholder="أدخل العنوان...">
+                            </div>
+                            <div class="input-group">
+                                <label>نوع النشاط المزاول:</label>
+                                <input type="text" id="m-activite" placeholder="مثال: مقهى، مطعم...">
+                            </div>
+                        </div>
+
+                        <div class="grid-2-cols">
+                            <div class="input-group">
+                                <label>المساحة الإجمالية (م²):</label>
+                                <input type="number" id="m-surface" placeholder="مثال: 12.5" step="0.01">
+                            </div>
+                            <div class="input-group">
+                                <label>رقم توصيل الأداء (Quittance):</label>
+                                <input type="text" id="m-num-quittance" placeholder="أدخل رقم التوصيل...">
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label>المبلغ المرجعي عن كل دورة (بالدرهم):</label>
+                            <input type="number" id="m-montant-base" value="500" step="0.01" oninput="calculerTotal()">
+                        </div>
+
+                        <label style="font-weight: bold; color: var(--dark); font-size: 14px;">حدد الدورات المؤدى عنها (دعم المتأخرات):</label>
+                        <div class="quarters-grid" id="quarters-container">
+                            </div>
+
+                        <div class="total-box">
+                            المبلغ الإجمالي للاستخلاص
+                            <span class="total-amount" id="m-montant-total-display">0.00 درهم</span>
+                            <input type="hidden" id="m-montant-total" value="0">
+                        </div>
+                    </div>
+
+                    <div class="uploads-grid">
+                        <div class="upload-area">
+                            <label class="upload-label">
+                                <span>🧾</span> رفع وصل الأداء المالي (PDF) *إجباري
+                                <input type="file" id="m-doc-paiement" accept=".pdf,.jpg,.jpeg,.png" onchange="afficherNomFichier(this, 'display-paiement')">
+                            </label>
+                            <div class="file-name-display" id="display-paiement">لم يتم اختيار أي ملف</div>
+                        </div>
+                        <div class="upload-area">
+                            <label class="upload-label">
+                                <span>📜</span> رفع الرخصة الموقعة نهائياً (اختياري)
+                                <input type="file" id="m-doc-licence" accept=".pdf,.jpg,.jpeg,.png" onchange="afficherNomFichier(this, 'display-licence')">
+                            </label>
+                            <div class="file-name-display" id="display-licence">لم يتم اختيار أي ملف</div>
+                        </div>
                     </div>
 
                     <div class="action-btns">
                         <button class="btn-approve" onclick="openConfirm(this)">
-                            <span>✅ إصدار الرخصة وإشعار المواطن</span>
+                            <span>✅ تسجيل الاستخلاص وإصدار الرخصة</span>
                         </button>
                     </div>
                 </div>
@@ -168,12 +231,12 @@
 
     <div id="customConfirmModal" class="modal" style="z-index: 10005;">
         <div class="confirm-modal-content">
-            <div style="font-size: 50px; margin-bottom: 10px;"> </div>
-            <h3 style="margin-top: 0; color: var(--primary);">تأكيد إصدار الرخصة</h3>
-            <p style="color: #64748b; margin-bottom: 10px;">هل أنت متأكد من تسليم الترخيص النهائي لهذا الملف؟ سيتم إرسال إشعار للمواطن.</p>
+            <div style="font-size: 50px; margin-bottom: 10px;">💰</div>
+            <h3 style="margin-top: 0; color: var(--primary);">تأكيد الاستخلاص والإصدار</h3>
+            <p style="color: #64748b; margin-bottom: 10px;">هل تأكدت من صحة البيانات المالية المدخلة والمبلغ الإجمالي؟ بمجرد التأكيد سيتم إصدار الرخصة وإشعار المواطن.</p>
             <div class="confirm-btns">
-                <button id="btn-confirm-yes" class="btn-confirm-yes">تأكيد الإصدار ✅</button>
-                <button onclick="closeConfirm()" class="btn-confirm-no">إلغاء ❌</button>
+                <button id="btn-confirm-yes" class="btn-confirm-yes">تأكيد نهائي ✅</button>
+                <button onclick="closeConfirm()" class="btn-confirm-no">مراجعة البيانات ❌</button>
             </div>
         </div>
     </div>
@@ -199,7 +262,6 @@
 
         async function chargerDemandes() {
             try {
-                // 📡 تم التعديل: الاتصال بـ API السحابي
                 const response = await fetch('/api/licence/demandes', {
                     method: 'GET',
                     headers: { 'Authorization': 'Bearer ' + token }
@@ -221,7 +283,7 @@
             tbody.innerHTML = '';
 
             if(donnees.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="empty-state">  ! لا توجد ملفات تنتظر الترخيص حاليا.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="empty-state">! لا توجد ملفات تنتظر الترخيص حاليا.</td></tr>`;
                 return;
             }
 
@@ -231,7 +293,7 @@
                     <td><strong style="color: var(--primary);">${d.code_suivi}</strong></td>
                     <td>${d.nom_complet}</td>
                     <td>${d.type_demande}</td>
-                    <td><button class="action-btn" onclick="ouvrirModal('${d.code_suivi}')">مراجعة وإصدار 📜</button></td>
+                    <td><button class="action-btn" onclick="ouvrirModal('${d.code_suivi}')">الاستخلاص والإصدار 💰</button></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -247,13 +309,43 @@
             afficherTableau(resultats);
         }
 
-        function afficherNomFichier(input) {
-            const display = document.getElementById('file-name-display');
+        function afficherNomFichier(input, displayId) {
+            const display = document.getElementById(displayId);
             if(input.files && input.files[0]) {
                 display.innerHTML = `<span style="color: var(--primary); font-weight:bold;">📄 ${input.files[0].name}</span>`;
             } else {
                 display.innerText = 'لم يتم اختيار أي ملف';
             }
+        }
+
+        // 🌟 دالة توليد شبكة السنوات والدورات ديناميكياً
+        function renderQuartersGrid() {
+            const container = document.getElementById('quarters-container');
+            container.innerHTML = '';
+            const currentYear = new Date().getFullYear();
+
+            for (let i = 0; i < 5; i++) {
+                const year = currentYear - i;
+                let row = `<div class="year-row">
+                    <div class="year-label">${year}</div>
+                    <div class="quarters-checkboxes">`;
+                for (let q = 1; q <= 4; q++) {
+                    // القيمة ستكون مثلاً: 2026-Q1
+                    row += `<label><input type="checkbox" class="quarter-cb" value="${year}-Q${q}" onchange="calculerTotal()"> دورة ${q}</label>`;
+                }
+                row += `</div></div>`;
+                container.innerHTML += row;
+            }
+        }
+
+        // 🌟 دالة الحساب الآلي للمجموع
+        function calculerTotal() {
+            const baseAmount = parseFloat(document.getElementById('m-montant-base').value) || 0;
+            const checkboxes = document.querySelectorAll('.quarter-cb:checked');
+            const total = baseAmount * checkboxes.length;
+            
+            document.getElementById('m-montant-total-display').innerText = total.toFixed(2) + ' درهم';
+            document.getElementById('m-montant-total').value = total;
         }
 
         function ouvrirModal(code_suivi) {
@@ -266,9 +358,24 @@
                 document.getElementById('m-type').innerText = demande.type_demande;
                 document.getElementById('m-code-suivi').value = demande.code_suivi; 
                 
-                // تصفير حقل الرفع
+                // تعبئة نوع النشاط افتراضياً بنوع الطلب لتسهيل العمل على الموظف
+                document.getElementById('m-activite').value = demande.type_demande;
+                
+                // تصفير الحقول المالية
+                document.getElementById('m-adresse').value = '';
+                document.getElementById('m-surface').value = '';
+                document.getElementById('m-num-quittance').value = '';
+                document.getElementById('m-montant-base').value = '500';
+                
+                // تصفير حقول الرفع
+                document.getElementById('m-doc-paiement').value = '';
+                document.getElementById('display-paiement').innerText = 'لم يتم اختيار أي ملف';
                 document.getElementById('m-doc-licence').value = '';
-                document.getElementById('file-name-display').innerText = 'لم يتم اختيار أي ملف';
+                document.getElementById('display-licence').innerText = 'لم يتم اختيار أي ملف';
+
+                // بناء شبكة الدورات وتصفير الحساب
+                renderQuartersGrid();
+                calculerTotal();
 
                 const docBox = document.getElementById('m-documents');
                 docBox.innerHTML = '';
@@ -278,8 +385,6 @@
                     const docPath = demande[`document_${i}`];
                     if (docPath) {
                         hasDocs = true;
-                        
-                        // 🌟 التعديل السحابي
                         let fileUrl = docPath; 
                         if (!docPath.startsWith('http')) {
                             const nomFichier = docPath.split('/').pop().split('\\').pop();
@@ -307,7 +412,7 @@
         }
 
         function fermerModal() { document.getElementById('modalTraitement').style.display = 'none'; }
-        // 🚀 الهندسة الجديدة للعرض: استخدام <object>
+        
         function openViewer(url) {
             const viewerContainer = document.getElementById('documentViewer');
             const isPdf = url.toLowerCase().includes('.pdf');
@@ -335,6 +440,23 @@
         }
 
         function openConfirm(btnElement) {
+            // 🛡️ جدار الحماية: التحقق من إدخال كافة البيانات المالية قبل التأكيد
+            const adresse = document.getElementById('m-adresse').value.trim();
+            const activite = document.getElementById('m-activite').value.trim();
+            const surface = document.getElementById('m-surface').value.trim();
+            const quittance = document.getElementById('m-num-quittance').value.trim();
+            const docPaiement = document.getElementById('m-doc-paiement').files.length;
+            const selectedQuarters = document.querySelectorAll('.quarter-cb:checked').length;
+
+            if(!adresse || !activite || !surface || !quittance || selectedQuarters === 0) {
+                showToast("⚠️ المرجو ملء جميع البيانات واختيار دورة واحدة على الأقل للاستخلاص.", true);
+                return;
+            }
+            if(docPaiement === 0) {
+                showToast("⚠️ المرجو رفع نسخة (PDF/صورة) من وصل الأداء المالي.", true);
+                return;
+            }
+
             btnApproveGlobal = btnElement;
             document.getElementById('customConfirmModal').style.display = 'block';
         }
@@ -343,46 +465,52 @@
             document.getElementById('customConfirmModal').style.display = 'none';
         }
 
-        // 📱 محرك الواتساب: رسالة التهنئة النهائية
-        // 📱 محرك الواتساب: رسالة التهنئة النهائية (النسخة الرسمية المستقرة)
         function genererLienWhatsApp(nom, cin, type, whatsapp) {
             let numStr = String(whatsapp).trim();
             if (numStr.startsWith('0')) numStr = '212' + numStr.substring(1);
-
-            // تنظيف النص وإزالة أي رموز غريبة في النهاية
             const message = `تهانينا السيد(ة) *${nom}*، صاحب البطاقة الوطنية *${cin}*.\n\nنعلمكم أن طلبكم المتعلق بـ ( *${type}* ) قد تمت دراسته والموافقة عليه بصفة نهائية ✅.\n\nالمرجو التفضل لمصلحة الرخص لاستلام رخصتكم.`;
-            
-            // استخدام رابط الـ API الرسمي بدلاً من الرابط القصير لتجنب خطأ 404
             return `https://api.whatsapp.com/send?phone=${numStr}&text=${encodeURIComponent(message)}`;
         }
 
-        // 🚀 إرسال القرار إلى الخادم (باستخدام FormData لدعم رفع الملفات)
-        // 🚀 إرسال القرار إلى الخادم (JSON لتجنب خطأ Multer)
-       // 🚀 إرسال القرار إلى الخادم (مع الملف الاختياري)
-        // 🚀 إرسال القرار مع الرفع السحابي وتخطي حظر الواتساب
+        // 🚀 إرسال القرار والبيانات المالية إلى الخادم
         document.getElementById('btn-confirm-yes').onclick = async function() {
             closeConfirm(); 
             
             const code_suivi = document.getElementById('m-code-suivi').value;
-            const fileInput = document.getElementById('m-doc-licence');
             const demande = listeDemandes.find(d => d.code_suivi === code_suivi);
             
             const originalText = btnApproveGlobal.innerHTML;
             btnApproveGlobal.innerHTML = '⏳ جاري الإصدار والرفع السحابي...';
             btnApproveGlobal.disabled = true;
 
-            // 💡 الخدعة الذكية: نفتح نافذة فارغة فوراً ليتجاوزها مانع النوافذ (Popup Blocker)
             const waWindow = window.open('about:blank', '_blank');
 
             try {
-                // تجهيز طرد الملفات
+                // تجميع البيانات المالية في طرد FormData
                 const formData = new FormData();
                 formData.append('code_suivi', code_suivi);
+                formData.append('adresse', document.getElementById('m-adresse').value.trim());
+                formData.append('type_activite', document.getElementById('m-activite').value.trim());
+                formData.append('surface_totale', document.getElementById('m-surface').value.trim());
+                formData.append('num_quittance', document.getElementById('m-num-quittance').value.trim());
+                formData.append('montant_unitaire', document.getElementById('m-montant-base').value);
+                formData.append('montant_total_paye', document.getElementById('m-montant-total').value);
                 
-                if (fileInput.files.length > 0) {
-                    formData.append('document_autorisation', fileInput.files[0]);
+                // جلب الدورات المختارة وتحويلها لنص JSON
+                const checkboxes = document.querySelectorAll('.quarter-cb:checked');
+                const periodes = Array.from(checkboxes).map(cb => cb.value);
+                formData.append('periodes_payees', JSON.stringify(periodes));
+                
+                // رفع الملفات
+                const docPaiement = document.getElementById('m-doc-paiement').files[0];
+                formData.append('document_paiement', docPaiement); // إجباري
+
+                const docLicence = document.getElementById('m-doc-licence').files[0];
+                if (docLicence) {
+                    formData.append('document_autorisation', docLicence); // اختياري
                 }
 
+                // 📡 إرسال الطلب للسيرفر
                 const response = await fetch(`/api/licence/delivrer`, {
                     method: 'PUT',
                     headers: { 'Authorization': 'Bearer ' + token }, 
@@ -390,23 +518,20 @@
                 });
 
                 if(response.ok) {
-                    showToast('تم إصدار الرخصة وأرشفتها بنجاح!  ');
+                    showToast('تم تسجيل الاستخلاص وإصدار الرخصة بنجاح! 💰');
                     
-                    // 🟢 توجيه النافذة الفارغة نحو رسالة الواتساب للتبشير
                     const waUrl = genererLienWhatsApp(demande.nom_complet, demande.cin, demande.type_demande, demande.numero_whatsapp);
-                    if (waWindow) {
-                        waWindow.location.href = waUrl;
-                    }
+                    if (waWindow) { waWindow.location.href = waUrl; }
 
                     fermerModal();
                     chargerDemandes();
                 } else {
-                    if (waWindow) waWindow.close(); // إغلاق النافذة إذا فشل الرفع
+                    if (waWindow) waWindow.close(); 
                     const errData = await response.json();
                     showToast(errData.message, true);
                 }
             } catch (error) {
-                if (waWindow) waWindow.close(); // إغلاق النافذة عند انقطاع الاتصال
+                if (waWindow) waWindow.close(); 
                 showToast('خطأ في الاتصال بالخادم!', true);
             } finally {
                 btnApproveGlobal.innerHTML = originalText;
@@ -424,46 +549,37 @@
     </script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
-    // 1. الاتصال برادار الخادم السحابي (تم التعديل)
     const socket = io('https://rokhsa-laayoune.onrender.com');
     
-    // 2. دالة تشغيل صوت التنبيه وإظهار الإشعار المرئي
     function declencherAlerte(donnees, couleur) {
-        // تشغيل نغمة لطيفة (Beep)
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const oscillator = audioCtx.createOscillator();
         oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // نغمة عالية
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); 
         oscillator.connect(audioCtx.destination);
         oscillator.start();
         oscillator.stop(audioCtx.currentTime + 0.1);
 
-        // إظهار Toast مخصص
         const toast = document.getElementById("toast");
         toast.innerHTML = `🔔 <b>إشعار جديد:</b><br>${donnees.message}`;
         toast.style.backgroundColor = couleur;
         toast.className = "show";
         
-        // تحديث الجدول أوتوماتيكياً لرؤية الملف الجديد فوراً!
         if(typeof chargerDemandes === 'function') chargerDemandes();
 
         setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 6000);
     }
 
-    // 3. تحديد هوية هذه الواجهة لكي تستمع للإشعارات الخاصة بها فقط
     const pageActuelle = window.location.pathname;
 
     if (pageActuelle.includes('dashboard.html') && !pageActuelle.includes('urbanisme') && !pageActuelle.includes('licence') && !pageActuelle.includes('admin')) {
-        // إذا كنا في المكتب الاقتصادي، نستمع لنداءات المواطن والتعمير
-        socket.on('alerte_eco', (data) => declencherAlerte(data, '#f59e0b')); // لون برتقالي
+        socket.on('alerte_eco', (data) => declencherAlerte(data, '#f59e0b')); 
     } 
     else if (pageActuelle.includes('urbanisme_dashboard.html')) {
-        // إذا كنا في التعمير، نستمع لنداءات الاقتصاد
-        socket.on('alerte_urb', (data) => declencherAlerte(data, '#3b82f6')); // لون أزرق
+        socket.on('alerte_urb', (data) => declencherAlerte(data, '#3b82f6')); 
     } 
     else if (pageActuelle.includes('licence_dashboard.html')) {
-        // إذا كنا في الرخص، نستمع للملفات الجاهزة
-        socket.on('alerte_licence', (data) => declencherAlerte(data, '#10b981')); // لون أخضر
+        socket.on('alerte_licence', (data) => declencherAlerte(data, '#10b981')); 
     }
 </script>
 </body>

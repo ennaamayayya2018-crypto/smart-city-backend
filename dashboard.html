@@ -8,12 +8,10 @@
         :root { --primary: #2c3e50; --secondary: #34495e; --success: #2ecc71; --danger: #e74c3c; --warning: #f39c12; --blue: #3498db; --bg: #f8fafc; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: var(--bg); color: #333; margin: 0; }
         
-        /* 🌟 الهيدر */
         .header { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 20px 30px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 25px; }
         .logout-btn { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.3s; backdrop-filter: blur(5px); }
         .logout-btn:hover { background: var(--danger); border-color: var(--danger); transform: translateY(-2px); }
 
-        /* 🌟 بطاقات الإحصائيات (KPIs) */
         .kpi-container { display: flex; gap: 20px; margin-bottom: 25px; }
         .kpi-card { flex: 1; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; border-right: 5px solid; transition: transform 0.3s; }
         .kpi-card:hover { transform: translateY(-5px); }
@@ -24,13 +22,14 @@
         .kpi-card.kpi-rej { border-color: var(--danger); }
         .kpi-icon { font-size: 35px; opacity: 0.8; }
 
-        /* 🌟 شريط البحث الذكي */
-        .search-container { margin-bottom: 20px; position: relative; }
+        .search-container { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+        .search-wrapper { position: relative; flex: 1; }
         .search-input { width: 100%; padding: 15px 45px 15px 15px; border-radius: 10px; border: 2px solid #e2e8f0; font-size: 16px; transition: 0.3s; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
         .search-input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.15); }
         .search-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 20px; color: #94a3b8; }
+        .btn-global-search { background: linear-gradient(135deg, var(--primary), var(--blue)); color: white; border: none; padding: 0 25px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; height: 54px; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(52, 152, 219, 0.2); }
+        .btn-global-search:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(52, 152, 219, 0.3); }
 
-        /* 🌟 الجدول الاحترافي */
         table { width: 100%; border-collapse: separate; border-spacing: 0; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         th, td { padding: 16px; text-align: right; border-bottom: 1px solid #edf2f7; }
         th { background-color: #f8fafc; color: var(--secondary); font-weight: 700; font-size: 13px; }
@@ -41,14 +40,13 @@
         .bg-warning { background: linear-gradient(135deg, #f1c40f, #f39c12); }
         .bg-success { background: linear-gradient(135deg, #2ecc71, #27ae60); }
         .bg-danger { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .bg-blue { background: linear-gradient(135deg, #3498db, #2980b9); }
         .action-btn { background: white; color: var(--primary); border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         .action-btn:hover { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
-        /* حالة الجدول الفارغ */
         .empty-state { text-align: center; padding: 50px; color: #64748b; font-size: 18px; font-weight: bold; }
         .empty-state-icon { font-size: 60px; margin-bottom: 15px; display: block; }
 
-        /* 🌟 النافذة المنبثقة الذكية (Split-Pane) */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(5px); }
         .modal-content { background-color: #fff; margin: 3% auto; border-radius: 16px; width: 85%; max-width: 1200px; height: 85vh; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); display: flex; flex-direction: column; overflow: hidden; animation: slideIn 0.3s ease-out; }
         @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -74,20 +72,40 @@
         .btn-reject { background: linear-gradient(135deg, #e74c3c, #c0392b); box-shadow: 0 4px 10px rgba(231,76,60,0.3); }
         .btn-reject:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(231,76,60,0.4); }
 
-        /* 🌟 بطاقات الوثائق المتطورة (مع التحميل) */
+        /* 🌟 تنسيقات الخزينة (الاستخلاص) */
+        .financial-section { background: #f0fdf4; border: 2px solid #10b981; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .financial-title { color: #10b981; margin-top: 0; border-bottom: 2px solid #bbf7d0; padding-bottom: 10px; font-size: 18px; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-weight: bold; margin-bottom: 8px; color: var(--primary); font-size: 14px; }
+        .input-group input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 14px; }
+        .grid-2-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .quarters-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; background: white; padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1; }
+        .year-row { display: flex; align-items: center; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px; }
+        .year-row:last-child { border-bottom: none; padding-bottom: 0; }
+        .year-label { font-weight: bold; width: 70px; color: var(--primary); font-size: 15px; }
+        .quarters-checkboxes { display: flex; gap: 15px; flex: 1; flex-wrap: wrap; }
+        .quarters-checkboxes label { display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 14px; background: #f8fafc; padding: 5px 10px; border-radius: 5px; border: 1px solid #e2e8f0; transition: 0.2s; }
+        .quarters-checkboxes label:hover { background: #e0f2fe; }
+        .total-box { background: var(--primary); color: white; padding: 20px; border-radius: 8px; text-align: center; margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .total-amount { font-size: 32px; font-weight: bold; color: var(--warning); display: block; margin-top: 5px; }
+        .upload-area { border: 2px dashed #cbd5e1; padding: 15px; text-align: center; border-radius: 10px; background: white; transition: 0.3s; margin-top: 15px;}
+        .upload-area:hover { border-color: #10b981; background: #f0fdf4; }
+        .upload-area input[type="file"] { display: none; }
+        .upload-label { cursor: pointer; color: var(--primary); font-weight: bold; display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 14px; }
+        .file-name-display { margin-top: 8px; font-size: 12px; color: #64748b; }
+
         .doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
         .doc-card { background: white; border: 1px solid #cbd5e1; border-radius: 12px; padding: 15px; text-align: center; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; }
         .doc-card:hover { transform: translateY(-5px); border-color: var(--blue); box-shadow: 0 8px 15px rgba(52,152,219,0.15); }
         .doc-icon { font-size: 45px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
         .doc-icon:hover { transform: scale(1.1); }
         .doc-actions { display: flex; gap: 8px; margin-top: 12px; width: 100%; }
-        .doc-btn { flex: 1; padding: 8px; border-radius: 6px; border: none; font-size: 12px; font-weight: bold; cursor: pointer; text-decoration: none; color: white; transition: 0.2s; }
+        .doc-btn { flex: 1; padding: 8px; border-radius: 6px; border: none; font-size: 12px; font-weight: bold; cursor: pointer; text-decoration: none; color: white; transition: 0.2s; text-align: center; }
         .btn-view { background: var(--primary); }
         .btn-view:hover { background: #1a252f; }
         .btn-down { background: var(--success); }
         .btn-down:hover { background: #27ae60; }
 
-        /* العارض و التوست و نافذة التأكيد */
         #documentViewer { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(8px); }
         #viewerFrame { width: 85%; height: 90vh; margin: 2.5vh auto; display: block; border: none; border-radius: 12px; background: white; box-shadow: 0 0 30px rgba(0,0,0,0.5); animation: zoomIn 0.3s ease; }
         @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -111,7 +129,7 @@
     <div id="toast">تمت العملية بنجاح!</div>
 
     <div class="header">
-        <h2 style="margin: 0;">📊 منصة تدبير الملك العمومي - المكتب الاقتصادي</h2>
+        <h2 style="margin: 0;">📊 منصة تدبير الملك العمومي - المكتب الاقتصادي والخزينة</h2>
         <button class="logout-btn" onclick="deconnexion()">تسجيل الخروج 🚪</button>
     </div>
 
@@ -140,8 +158,16 @@
     </div>
 
     <div class="search-container">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="searchInput" class="search-input" placeholder="ابحث برقم التتبع، الاسم، أو رقم البطاقة (CIN)..." onkeyup="filtrerDemandes()">
+        <div class="search-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" class="search-input" placeholder="ابحث محلياً للفرز..." onkeyup="filtrerDemandes()">
+        </div>
+        <button class="btn-global-search" onclick="rechercheGlobale()">
+            <span>بحث شامل في الأرشيف والخزينة 🏦</span>
+        </button>
+        <button class="btn-global-search" style="background: var(--secondary);" onclick="chargerDemandes()">
+            <span>🔄 تصفير وعرض المعلقة</span>
+        </button>
     </div>
 
     <table>
@@ -200,6 +226,65 @@
         </div>
     </div>
 
+    <div id="modalPaiement" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="margin: 0; color: #10b981;">💰 تسجيل استخلاص مالي جديد (الخزينة)</h3>
+                <span class="close-btn" onclick="fermerModalPaiement()">&times;</span>
+            </div>
+            
+            <div class="modal-body" style="padding: 25px; overflow-y: auto;">
+                <div class="details-box" style="border-left: 4px solid #10b981;">
+                    <p><strong>الاسم الكامل:</strong> <span id="p-nom"></span></p>
+                    <p><strong>نوع النشاط:</strong> <span id="p-type" style="background: #e0f2fe; color: #0284c7; padding: 2px 8px; border-radius: 4px;"></span></p>
+                    <p><strong>حالة الملف:</strong> <span class="badge bg-success">مرخص نهائياً 📜</span></p>
+                </div>
+
+                <input type="hidden" id="p-code-suivi">
+
+                <div class="financial-section">
+                    <h4 class="financial-title">تفاصيل الأداء الجديد</h4>
+                    
+                    <div class="grid-2-cols">
+                        <div class="input-group">
+                            <label>رقم توصيل الأداء (Quittance):</label>
+                            <input type="text" id="p-num-quittance" placeholder="أدخل رقم التوصيل...">
+                        </div>
+                        <div class="input-group">
+                            <label>المبلغ المرجعي عن كل دورة (بالدرهم):</label>
+                            <input type="number" id="p-montant-base" value="500" step="0.01" oninput="calculerPayTotal()">
+                        </div>
+                    </div>
+
+                    <label style="font-weight: bold; color: var(--primary); font-size: 14px; margin-top: 10px; display: block;">حدد الدورات المؤدى عنها (دعم المتأخرات والدفع المسبق):</label>
+                    <div class="quarters-grid" id="pay-quarters-container">
+                        </div>
+
+                    <div class="total-box">
+                        المبلغ الإجمالي للاستخلاص
+                        <span class="total-amount" id="p-montant-total-display">0.00 درهم</span>
+                        <input type="hidden" id="p-montant-total" value="0">
+                    </div>
+
+                    <div class="upload-area">
+                        <label class="upload-label">
+                            <span style="font-size: 30px;">🧾</span>
+                            اضغط هنا لرفع وصل الأداء المالي الجديد (PDF/صورة) *إجباري
+                            <input type="file" id="p-doc-paiement" accept=".pdf,.jpg,.jpeg,.png" onchange="afficherNomFichier(this, 'p-file-display')">
+                        </label>
+                        <div class="file-name-display" id="p-file-display">لم يتم اختيار أي ملف</div>
+                    </div>
+                </div>
+
+                <div class="action-btns" style="position: relative; padding: 0;">
+                    <button class="btn-transfer" style="background: linear-gradient(135deg, #10b981, #059669); padding: 18px; font-size: 18px;" onclick="submitPaiement(this)">
+                        <span>✅ تأكيد وحفظ الدفعة المالية في الأرشيف</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="customConfirmModal" class="modal" style="z-index: 10005;">
         <div class="confirm-modal-content">
             <div style="font-size: 50px; margin-bottom: 10px;">🛡️</div>
@@ -232,6 +317,7 @@
         }
 
         async function chargerDemandes() {
+            document.getElementById('searchInput').value = '';
             try {
                 const response = await fetch('/api/eco/demandes', {
                     method: 'GET',
@@ -249,15 +335,44 @@
             } catch (error) { showToast("حدث خطأ في جلب البيانات", true); }
         }
 
+        // 🌟 البحث الشامل في قاعدة البيانات (للعثور على الملفات المرخصة)
+        async function rechercheGlobale() {
+            const terme = document.getElementById('searchInput').value.trim();
+            if (!terme) {
+                showToast("المرجو إدخال رقم التتبع أو البطاقة للبحث الشامل.", true);
+                return;
+            }
+            try {
+                const response = await fetch(`/api/eco/recherche?q=${terme}`, {
+                    method: 'GET',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    listeDemandes = [data.demande]; // وضع النتيجة الوحيدة في المصفوفة
+                    afficherTableau(listeDemandes);
+                    showToast('تم جلب الملف من الأرشيف بنجاح. 🏦');
+                } else {
+                    const err = await response.json();
+                    showToast(err.message, true);
+                    afficherTableau([]);
+                }
+            } catch(e) { showToast('خطأ أثناء البحث الشامل.', true); }
+        }
+
         function mettreAJourKPIs() {
             const total = listeDemandes.length;
             const app = listeDemandes.filter(d => d.statut === 'retour_urb_favorable').length;
             const rej = listeDemandes.filter(d => d.statut === 'retour_urb_defavorable').length;
-            const newReq = total - app - rej;
+            const newReq = listeDemandes.filter(d => d.statut === 'en_attente_eco').length;
 
-            document.getElementById('kpi-new-count').innerText = newReq;
-            document.getElementById('kpi-app-count').innerText = app;
-            document.getElementById('kpi-rej-count').innerText = rej;
+            // فقط تحديث الـ KPIs إذا كنا في العرض العادي (ليس بحث شامل لملف واحد)
+            if(listeDemandes.length !== 1 || !listeDemandes[0].statut.includes('autorise')) {
+                document.getElementById('kpi-new-count').innerText = newReq;
+                document.getElementById('kpi-app-count').innerText = app;
+                document.getElementById('kpi-rej-count').innerText = rej;
+            }
         }
 
         function afficherTableau(donnees) {
@@ -265,7 +380,7 @@
             tbody.innerHTML = '';
 
             if(donnees.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><span class="empty-state-icon">📭</span>لا توجد ملفات معلقة حالياً.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><span class="empty-state-icon">📭</span>لا توجد ملفات.</td></tr>`;
                 return;
             }
 
@@ -273,6 +388,7 @@
                 let badgeClass = 'bg-warning';
                 let statutTexte = 'طلب جديد 🟠';
                 let rowColor = '';
+                let actionBtnHtml = `<button class="action-btn" onclick="ouvrirModal(${d.id})">معالجة ⚙️</button>`;
 
                 if (d.statut === 'retour_urb_favorable') {
                     badgeClass = 'bg-success';
@@ -282,6 +398,12 @@
                     badgeClass = 'bg-danger';
                     statutTexte = 'مرفوض تقنياً 🔴';
                     rowColor = 'background-color: #fef2f2; border-right: 4px solid #e74c3c;';
+                } else if (d.statut === 'autorise') {
+                    // 🌟 الذكاء في عرض الملفات المرخصة للاستخلاص
+                    badgeClass = 'bg-success';
+                    statutTexte = 'مرخص نهائياً 📜';
+                    rowColor = 'background-color: #f0fdf4; border-right: 4px solid #10b981;';
+                    actionBtnHtml = `<button class="action-btn" style="color:#10b981; border-color:#10b981;" onclick="ouvrirModalPaiement('${d.code_suivi}')">إضافة استخلاص 💰</button>`;
                 }
 
                 const tr = document.createElement('tr');
@@ -291,7 +413,7 @@
                     <td>${d.nom_complet}</td>
                     <td>${d.type_demande}</td>
                     <td><span class="badge ${badgeClass}">${statutTexte}</span></td>
-                    <td><button class="action-btn" onclick="ouvrirModal(${d.id})">معالجة ⚙️</button></td>
+                    <td>${actionBtnHtml}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -307,7 +429,122 @@
             afficherTableau(resultats);
         }
 
-        // ====== دالة فتح المودال وعرض البيانات ======
+        function afficherNomFichier(input, displayId) {
+            const display = document.getElementById(displayId);
+            if(input.files && input.files[0]) {
+                display.innerHTML = `<span style="color: #10b981; font-weight:bold;">📄 ${input.files[0].name}</span>`;
+            } else {
+                display.innerText = 'لم يتم اختيار أي ملف';
+            }
+        }
+
+        // ==============================================
+        // وظائف نافذة الاستخلاص المالي (الخزينة)
+        // ==============================================
+        function renderPayQuartersGrid() {
+            const container = document.getElementById('pay-quarters-container');
+            container.innerHTML = '';
+            const currentYear = new Date().getFullYear();
+
+            for (let i = 0; i < 5; i++) {
+                const year = currentYear - i;
+                let row = `<div class="year-row"><div class="year-label">${year}</div><div class="quarters-checkboxes">`;
+                for (let q = 1; q <= 4; q++) {
+                    row += `<label><input type="checkbox" class="pay-quarter-cb" value="${year}-Q${q}" onchange="calculerPayTotal()"> دورة ${q}</label>`;
+                }
+                row += `</div></div>`;
+                container.innerHTML += row;
+            }
+        }
+
+        function calculerPayTotal() {
+            const baseAmount = parseFloat(document.getElementById('p-montant-base').value) || 0;
+            const checkboxes = document.querySelectorAll('.pay-quarter-cb:checked');
+            const total = baseAmount * checkboxes.length;
+            
+            document.getElementById('p-montant-total-display').innerText = total.toFixed(2) + ' درهم';
+            document.getElementById('p-montant-total').value = total;
+        }
+
+        function ouvrirModalPaiement(code_suivi) {
+            const demande = listeDemandes.find(d => d.code_suivi === code_suivi);
+            if(demande) {
+                document.getElementById('p-nom').innerText = demande.nom_complet;
+                document.getElementById('p-type').innerText = demande.type_demande;
+                document.getElementById('p-code-suivi').value = demande.code_suivi;
+                
+                // Reset form
+                document.getElementById('p-num-quittance').value = '';
+                document.getElementById('p-doc-paiement').value = '';
+                document.getElementById('p-file-display').innerText = 'لم يتم اختيار أي ملف';
+                
+                renderPayQuartersGrid();
+                calculerPayTotal();
+
+                document.getElementById('modalPaiement').style.display = 'block';
+            }
+        }
+
+        function fermerModalPaiement() { document.getElementById('modalPaiement').style.display = 'none'; }
+
+        async function submitPaiement(btnElement) {
+            const code_suivi = document.getElementById('p-code-suivi').value;
+            const num_quittance = document.getElementById('p-num-quittance').value.trim();
+            const montant_base = document.getElementById('p-montant-base').value;
+            const montant_total = document.getElementById('p-montant-total').value;
+            const docFile = document.getElementById('p-doc-paiement').files[0];
+            const checkboxes = document.querySelectorAll('.pay-quarter-cb:checked');
+
+            if (!num_quittance || checkboxes.length === 0) {
+                showToast("⚠️ المرجو إدخال رقم التوصيل وتحديد دورة واحدة على الأقل.", true);
+                return;
+            }
+            if (!docFile) {
+                showToast("⚠️ المرجو رفع نسخة من وصل الأداء.", true);
+                return;
+            }
+
+            const periodes = Array.from(checkboxes).map(cb => cb.value);
+
+            const formData = new FormData();
+            formData.append('code_suivi', code_suivi);
+            formData.append('num_quittance', num_quittance);
+            formData.append('montant_unitaire', montant_base);
+            formData.append('montant_total_paye', montant_total);
+            formData.append('periodes_payees', JSON.stringify(periodes));
+            formData.append('document_paiement', docFile);
+
+            const originalText = btnElement.innerHTML;
+            btnElement.innerHTML = '⏳ جاري الحفظ والرفع السحابي...';
+            btnElement.disabled = true;
+
+            try {
+                const response = await fetch('/api/eco/paiement', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    showToast('تم تسجيل الاستخلاص المالي وأرشفته بنجاح! 💰');
+                    fermerModalPaiement();
+                    chargerDemandes(); // تصفير العودة للصفحة الرئيسية لتفادي الأخطاء
+                } else {
+                    const err = await response.json();
+                    showToast(err.message, true);
+                }
+            } catch (error) {
+                showToast('خطأ في الاتصال بالخادم!', true);
+            } finally {
+                btnElement.innerHTML = originalText;
+                btnElement.disabled = false;
+            }
+        }
+
+
+        // ==============================================
+        // وظائف المعالجة الإدارية (كما هي)
+        // ==============================================
         function ouvrirModal(id) {
             const demande = listeDemandes.find(d => d.id === id);
             
@@ -327,8 +564,6 @@
                    const docPath = demande[`document_${i}`];
                    if (docPath) {
                        hasDocs = true;
-        
-                       // التحقق من نوع الرابط (محلي أو سحابي)
                        let fileUrl = docPath; 
                        if (!docPath.startsWith('http')) {
                            const nomFichier = docPath.split('/').pop().split('\\').pop();
@@ -355,7 +590,6 @@
                     docBox.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #94a3b8; padding: 40px; border: 2px dashed #cbd5e1; border-radius: 10px;">لا توجد وثائق مرفقة مع هذا الملف 📁</div>';
                 }
 
-                // 🧠 الذكاء الإداري للتحكم في الأزرار بناءً على مسار الملف
                 const btnUrb = document.getElementById('btn-urb');
                 const btnLic = document.getElementById('btn-lic');
                 const btnRejText = document.querySelector('.btn-reject span');
@@ -372,7 +606,6 @@
                     btnRejText.innerText = '❌ تأكيد الرفض التقني وإشعار المواطن';
                 } else {
                     btnRejText.innerText = '❌ رفض (نقص الوثائق)';
-                    
                     if (typesUrbanisme.includes(demande.type_demande)) {
                         btnUrb.style.display = 'flex';  
                         btnLic.style.display = 'none';
@@ -388,13 +621,11 @@
 
         function fermerModal() { document.getElementById('modalTraitement').style.display = 'none'; }
 
-        // 🚀 الهندسة المستقرة للعرض لتجنب حظر المتصفحات
         function openViewer(url) {
             const viewerContainer = document.getElementById('documentViewer');
             const viewerContent = document.getElementById('viewerContent');
             const isPdf = url.toLowerCase().includes('.pdf');
-
-            viewerContent.innerHTML = ''; // تنظيف المحتوى السابق
+            viewerContent.innerHTML = ''; 
 
             if (isPdf) {
                 viewerContent.innerHTML = `
@@ -407,7 +638,6 @@
             } else {
                 viewerContent.innerHTML = `<iframe src="${url}" style="width: 85%; height: 90vh; margin: 2.5vh auto; display: block; border: none; border-radius: 12px; background: white; box-shadow: 0 0 30px rgba(0,0,0,0.5);"></iframe>`;
             }
-
             viewerContainer.style.display = 'block';
         }
 
@@ -415,7 +645,7 @@
             const viewerContainer = document.getElementById('documentViewer');
             const viewerContent = document.getElementById('viewerContent');
             viewerContainer.style.display = 'none';
-            viewerContent.innerHTML = ''; // 🧹 تنظيف الذاكرة
+            viewerContent.innerHTML = ''; 
         }
 
         function openConfirm(nouveauStatut, btnElement) {
@@ -428,7 +658,6 @@
             pendingDecision = null;
         }
 
-        // 📱 دالة الواتساب
         function genererLienWhatsApp(nom, cin, type, whatsapp, observations) {
             const obsFinale = (observations && observations.trim() !== "") 
                 ? observations.trim() 
@@ -442,7 +671,6 @@
             return `https://wa.me/${numStr}?text=${encodeURIComponent(message)}`;
         }
 
-        // 🚀 تنفيذ القرار (تم إضافة method: 'PUT' لتجنب خطأ الاتصال بالسيرفر)
         document.getElementById('btn-confirm-yes').onclick = async function() {
             if(!pendingDecision) return;
             const nouveauStatut = pendingDecision.statut;
@@ -459,7 +687,6 @@
             btnElement.disabled = true;
 
             try {
-                // 🔴 هذا هو التعديل החשוב الذي تم حقنه لضمان عبور الطلب
                 const response = await fetch(`/api/eco/demandes/${id}/traiter`, {
                     method: 'PUT', 
                     headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
@@ -469,7 +696,6 @@
                 if(response.ok) {
                     showToast('تمت معالجة الطلب بنجاح! ✅');
                     
-                    // 🟢 تفعيل بروتوكول الواتساب حصرياً في حالات الرفض (rejete)
                     if (nouveauStatut === 'rejete') {
                         setTimeout(() => {
                             const waUrl = genererLienWhatsApp(demande.nom_complet, demande.cin, demande.type_demande, demande.numero_whatsapp, observations);
@@ -501,10 +727,8 @@
     </script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
-    // 1. الاتصال برادار الخادم
     const socket = io('https://rokhsa-laayoune.onrender.com');
     
-    // 2. دالة تشغيل صوت التنبيه وإظهار الإشعار المرئي
     function declencherAlerte(donnees, couleur) {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const oscillator = audioCtx.createOscillator();
@@ -524,7 +748,6 @@
         setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 6000);
     }
 
-    // 3. الاستماع للإشعارات
     const pageActuelle = window.location.pathname;
 
     if (pageActuelle.includes('dashboard.html') && !pageActuelle.includes('urbanisme') && !pageActuelle.includes('licence') && !pageActuelle.includes('admin')) {

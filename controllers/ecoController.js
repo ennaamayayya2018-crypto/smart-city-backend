@@ -1,4 +1,31 @@
 const db = require('../config/db'); 
+const cloudinary = require('cloudinary').v2;
+
+// ☁️ إعدادات Cloudinary (خاصة برفع وصولات الأداء الجديدة)
+cloudinary.config({ 
+  cloud_name: 'dswrytidw', 
+  api_key: '511245475377128', 
+  api_secret: 'wGyeC6HjBxP4BxZItqp96kMpcXU' 
+});
+
+// دالة مساعدة للرفع السحابي
+const uploadToCloudinary = (fileBuffer, originalName) => {
+    return new Promise((resolve, reject) => {
+        const isPdf = originalName.toLowerCase().endsWith('.pdf');
+        const stream = cloudinary.uploader.upload_stream(
+            { 
+                folder: "smart_city_permits", 
+                resource_type: "image", 
+                format: isPdf ? "pdf" : undefined
+            },
+            (error, result) => {
+                if (error) reject(error);
+                else resolve(result.secure_url);
+            }
+        );
+        stream.end(fileBuffer);
+    });
+};
 
 // ==========================================
 // 1. دالة: جلب الطلبات المعلقة (GET)
@@ -40,7 +67,7 @@ const rechercherDemande = async (req, res) => {
 };
 
 // ==========================================
-// 3. دالة: محرك اتخاذ القرار - تحديث مسار الملف (PUT) 🚨
+// 3. دالة: محرك اتخاذ القرار - تحديث مسار الملف (PUT)
 // ==========================================
 const traiterDemande = async (req, res) => {
     try {
@@ -50,7 +77,6 @@ const traiterDemande = async (req, res) => {
             return res.status(400).json({ message: 'خطأ: المرجو تحديد رقم الطلب والقرار المتخذ.' });
         }
 
-        // 1. تحديث قاعدة البيانات
         const query = `
             UPDATE demandes 
             SET statut = $1, observations = $2 
@@ -64,7 +90,6 @@ const traiterDemande = async (req, res) => {
             return res.status(404).json({ message: 'الملف غير موجود في قاعدة البيانات.' });
         }
 
-        // 2. إرسال الإشعارات اللحظية (بأمان - لا ينهار السيرفر إذا فشل السوكيت)
         try {
             const io = req.app.get('io');
             if (io) {
@@ -78,7 +103,6 @@ const traiterDemande = async (req, res) => {
             console.error('⚠️ فشل إرسال إشعار Socket.io ولكن سيستمر العمل:', socketErr);
         }
 
-        // 3. الرد بنجاح
         return res.status(200).json({
             message: 'تم تحديث المسار الإداري للملف بنجاح!',
             statut_actuel: result.rows[0].statut,
@@ -94,9 +118,60 @@ const traiterDemande = async (req, res) => {
     }
 };
 
-// تصدير الدوال الثلاث
+// ==========================================
+// 4. 💰 دالة: تسجيل استخلاص مالي جديد للمتأخرات (POST)
+// ==========================================
+const enregistrerPaiement = async (req, res) => {
+    try {
+        const { code_suivi, num_quittance, montant_unitaire, montant_total_paye, periodes_payees } = req.body;
+
+        // 1. جدار الحماية للبيانات
+        if (!code_suivi || !num_quittance || !periodes_payees) {
+            return res.status(400).json({ message: 'المرجو إدخال جميع البيانات المالية.' });
+        }
+        if (!req.file) {
+            return res.status(400).json({ message: 'وصل الأداء المالي (PDF/صورة) إجباري.' });
+        }
+
+        // 2. التأكد أن الملف حاصل على الرخصة النهائية (autorise)
+        const checkQuery = `SELECT id FROM demandes WHERE code_suivi = $1 AND statut = 'autorise'`;
+        const checkResult = await db.query(checkQuery, [code_suivi]);
+        if (checkResult.rowCount === 0) {
+            return res.status(403).json({ message: 'لا يمكن تسجيل استخلاص لملف غير مرخص نهائياً.' });
+        }
+
+        // 3. رفع الوصل للسحابة
+        const doc_paiement_url = await uploadToCloudinary(req.file.buffer, req.file.originalname);
+
+        // 4. حفظ الدفعة في جدول الاستخلاصات
+        const insertQuery = `
+            INSERT INTO recouvrements 
+            (code_suivi, periodes_payees, montant_unitaire, montant_total_paye, num_quittance, doc_paiement_pdf)
+            VALUES ($1, $2::jsonb, $3, $4, $5, $6)
+            RETURNING *;
+        `;
+        
+        await db.query(insertQuery, [
+            code_suivi,
+            periodes_payees, // يحفظ كمصفوفة JSON
+            montant_unitaire,
+            montant_total_paye,
+            num_quittance,
+            doc_paiement_url
+        ]);
+
+        res.status(200).json({ message: 'تم تسجيل الاستخلاص المالي وأرشفة الوصل بنجاح! 💰' });
+
+    } catch (error) {
+        console.error('❌ خطأ أثناء تسجيل الاستخلاص المستمر:', error);
+        res.status(500).json({ message: 'حدث خطأ في الخادم أثناء تسجيل الدفعة.' });
+    }
+};
+
+// تصدير جميع الدوال
 module.exports = {
     getDemandesEco,
     rechercherDemande,
-    traiterDemande
+    traiterDemande,
+    enregistrerPaiement
 };

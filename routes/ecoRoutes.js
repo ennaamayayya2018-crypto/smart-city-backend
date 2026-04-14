@@ -1,9 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const ecoController = require('../controllers/ecoController');
+const multer = require('multer'); // 💡 استدعاء مكتبة الرفع
 
 // 1. استدعاء حارس الأمان (Middleware)
 const authMiddleware = require('../middlewares/authMiddleware');
+
+// 🛡️ تجهيز حارس الرفع لاستقبال وصل الأداء للاستخلاصات المستمرة
+const uploadPaiement = multer({ storage: multer.memoryStorage() }).single('document_paiement');
 
 // ==========================================
 // 2. تطبيق الحارس على الروابط (التشفير)
@@ -17,20 +21,29 @@ router.get(
     ecoController.getDemandesEco
 );
 
-// 2. مسار البحث عن طلب (محمي) - أضفناها لأنها موجودة في الكنترولر الخاص بك
+// 2. مسار البحث عن طلب (محمي)
 router.get(
-    '/recherche', // أو '/recherche/:code' حسب ما برمجته داخل الدالة
+    '/recherche', 
     authMiddleware.verifierToken, 
     authMiddleware.verifierRole(['eco', 'admin']), 
     ecoController.rechercherDemande
 );
 
-// 3. مسار معالجة/تحويل الطلب (محمي) - 🚨 تم تصحيح الاسم هنا ليتطابق مع traiterDemande
+// 3. مسار معالجة/تحويل الطلب (محمي)
 router.put(
     '/demandes/:id/traiter', 
     authMiddleware.verifierToken, 
     authMiddleware.verifierRole(['eco', 'admin']), 
     ecoController.traiterDemande
+);
+
+// 4. 💰 مسار تسجيل استخلاص مالي جديد للملفات المرخصة (الجديد)
+router.post(
+    '/paiement',
+    authMiddleware.verifierToken,
+    authMiddleware.verifierRole(['eco', 'admin']),
+    uploadPaiement,
+    ecoController.enregistrerPaiement
 );
 
 module.exports = router;
